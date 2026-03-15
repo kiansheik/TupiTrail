@@ -40,19 +40,22 @@ export const threeMonthBenefits: ThreeMonthBenefit[] = [
   {
     id: 'confidence',
     title: 'Falar com mais confiança',
-    description: 'Você responde com naturalidade em situações reais.',
+    description: '',
+    // description: 'Você responde com naturalidade em situações reais.',
     tone: 'mint',
   },
   {
     id: 'vocabulary',
     title: 'Vocabulário útil no dia a dia',
-    description: 'Mais palavras práticas para conversar sem travar.',
+    description: '',
+    // description: 'Mais palavras práticas para conversar sem travar.',
     tone: 'amber',
   },
   {
     id: 'habit',
     title: 'Hábito consistente de estudo',
-    description: 'Sessões curtas viram rotina sem desgaste mental.',
+    description: '',
+    // description: 'Sessões curtas viram rotina sem desgaste mental.',
     tone: 'sky',
   },
 ]
