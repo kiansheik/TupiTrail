@@ -92,6 +92,49 @@ const correctAnswerText = (exercise: Exercise): string => {
   return exercise.correctChoice
 }
 
+const normalizeAudioLabel = (value: string): string =>
+  value
+    .trim()
+    .replace(/[_-]/g, ' ')
+    .replace(/[^\w\s']/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+
+const extractNewWord = (exercise: Exercise): string | undefined => {
+  if (!exercise.newWordBadge) {
+    return undefined
+  }
+
+  if (exercise.type === 'select_image') {
+    return exercise.prompt
+  }
+
+  if (exercise.promptSegments?.length) {
+    const highlighted = exercise.promptSegments.find((segment) => segment.highlight === 'new-word')
+    if (highlighted?.text?.trim()) {
+      return highlighted.text.trim()
+    }
+  }
+
+  if (exercise.type === 'multiple_choice_translation') {
+    return exercise.prompt
+  }
+
+  return undefined
+}
+
+const getAudioLabel = (exercise: Exercise): string => {
+  if (exercise.type === 'select_image') {
+    return `🔊 ${normalizeAudioLabel(exercise.prompt)}`
+  }
+
+  if (exercise.audio?.mode === 'tts') {
+    return `🔊 ${normalizeAudioLabel(exercise.audio.text)}`
+  }
+
+  return '🔊 Escutar'
+}
+
 export const LessonRunnerScreen = () => {
   const navigate = useNavigate()
   const params = useParams<{ lessonId: string }>()
@@ -120,7 +163,9 @@ export const LessonRunnerScreen = () => {
 
   const totalExercises = lesson?.exercises.length ?? 1
   const mainIndex = queueState?.mainIndex ?? 0
-  const progress = Math.round((Math.min(mainIndex, totalExercises) / totalExercises) * 100)
+  const rawProgress = Math.round((Math.min(mainIndex, totalExercises) / totalExercises) * 100)
+  const progress =
+    queueState?.phase === 'main' && mainIndex === 0 ? Math.max(rawProgress, 8) : rawProgress
 
   useEffect(() => {
     if (!currentExercise || feedback) {
@@ -224,6 +269,8 @@ export const LessonRunnerScreen = () => {
   const evaluationPreview = feedback
     ? feedback.result
     : evaluateExercise(currentExercise, toUserAnswer(currentExercise, draft))
+  const currentNewWord = extractNewWord(currentExercise)
+  const audioLabel = getAudioLabel(currentExercise)
 
   return (
     <ScreenScaffold
@@ -269,12 +316,12 @@ export const LessonRunnerScreen = () => {
         <div className="flex items-start gap-3">
           <CharacterAvatar id={currentExercise.character?.id ?? 'bird'} mood={currentExercise.character?.mood} />
           <div className="pt-2">
-            {currentExercise.newWordBadge ? <NewWordBadge /> : null}
+            {currentExercise.newWordBadge ? <NewWordBadge word={currentNewWord} /> : null}
           </div>
         </div>
 
         <div className="flex gap-2">
-          {currentExercise.audio ? <AudioButton onClick={onReplayAudio} /> : null}
+          {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
           {currentExercise.type === 'listening_tap' ? <SlowAudioButton onClick={onSlowAudio} /> : null}
         </div>
 
@@ -283,7 +330,7 @@ export const LessonRunnerScreen = () => {
             {currentExercise.promptSegments.map((segment, index) => (
               <span
                 key={`${segment.text}-${index}`}
-                className={segment.highlight === 'new-word' ? 'rounded bg-violet-100 px-1 text-violet-700' : ''}
+                className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
               >
                 {segment.text}
               </span>

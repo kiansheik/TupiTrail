@@ -21,7 +21,7 @@ export const TokenTranslateExercise = ({
         {exercise.sourceText.map((segment, index) => (
           <span
             key={`${segment.text}-${index}`}
-            className={segment.highlight === 'new-word' ? 'rounded bg-violet-100 px-1 text-violet-700' : ''}
+            className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
           >
             {segment.text}
           </span>

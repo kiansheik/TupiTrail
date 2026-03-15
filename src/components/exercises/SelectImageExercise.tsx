@@ -1,6 +1,7 @@
 import type { SelectImageExercise as SelectImageExerciseType } from '@/core/lesson-engine/types'
 
 import { ChoiceCard } from '@/components/ui/ChoiceCard'
+import { NewWordWord } from '@/components/ui/NewWordBadge'
 
 type SelectImageExerciseProps = {
   exercise: SelectImageExerciseType
@@ -14,20 +15,27 @@ export const SelectImageExercise = ({
   onSelect,
 }: SelectImageExerciseProps) => {
   return (
-    <div className="space-y-4">
-      <p className="text-lg font-black text-ink">{exercise.prompt}</p>
-      <div className="grid grid-cols-2 gap-3">
+    <div className="flex min-h-[360px] flex-col gap-4">
+      {exercise.newWordBadge ? (
+        <div>
+          <NewWordWord word={exercise.prompt} className="text-5xl leading-none" />
+        </div>
+      ) : (
+        <p className="text-xl font-black text-ink">{exercise.prompt}</p>
+      )}
+      <div className="grid flex-1 auto-rows-fr grid-cols-2 gap-3">
         {exercise.options.map((option) => (
           <ChoiceCard
             key={option.id}
             selected={selectedOptionId === option.id}
             onClick={() => onSelect(option.id)}
+            className="flex h-full min-h-[138px] items-center justify-center p-0"
           >
-            <div className="flex flex-col items-center gap-2 py-3">
-              <span className="text-4xl" aria-hidden>
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-[0.9rem] px-2 py-3">
+              <span className="text-6xl leading-none" aria-hidden>
                 {option.imageEmoji}
               </span>
-              <span className="text-sm font-black">{option.label}</span>
+              <span className="text-base font-black capitalize">{option.label}</span>
             </div>
           </ChoiceCard>
         ))}

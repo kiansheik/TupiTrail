@@ -6,9 +6,10 @@ type ChoiceCardProps = PropsWithChildren<{
   selected?: boolean
   onClick?: () => void
   disabled?: boolean
+  className?: string
 }>
 
-export const ChoiceCard = ({ children, selected, onClick, disabled }: ChoiceCardProps) => {
+export const ChoiceCard = ({ children, selected, onClick, disabled, className }: ChoiceCardProps) => {
   return (
     <button
       type="button"
@@ -20,6 +21,7 @@ export const ChoiceCard = ({ children, selected, onClick, disabled }: ChoiceCard
           ? 'border-primaryDark bg-primary/20 text-ink'
           : 'border-ink/15 bg-white hover:border-primary/60 hover:bg-primary/5',
         disabled && 'cursor-not-allowed opacity-50',
+        className,
       )}
     >
       {children}
