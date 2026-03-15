@@ -15,6 +15,7 @@ import { ComboBanner } from '@/components/ui/ComboBanner'
 import { FeedbackPanel } from '@/components/ui/FeedbackPanel'
 import { NewWordBadge } from '@/components/ui/NewWordBadge'
 import { SlowAudioButton } from '@/components/ui/SlowAudioButton'
+import { SpeechBubble } from '@/components/ui/SpeechBubble'
 import { evaluateExercise } from '@/core/lesson-engine/evaluator'
 import { getCurrentExerciseId } from '@/core/lesson-engine/session'
 import type { Exercise, UserAnswer } from '@/core/lesson-engine/types'
@@ -271,6 +272,7 @@ export const LessonRunnerScreen = () => {
     : evaluateExercise(currentExercise, toUserAnswer(currentExercise, draft))
   const currentNewWord = extractNewWord(currentExercise)
   const audioLabel = getAudioLabel(currentExercise)
+  const hasPromptBubble = Boolean(currentExercise.promptSegments?.length)
 
   return (
     <ScreenScaffold
@@ -314,28 +316,39 @@ export const LessonRunnerScreen = () => {
         <ComboBanner combo={combo.current} />
 
         <div className="flex items-start gap-3">
-          <CharacterAvatar id={currentExercise.character?.id ?? 'bird'} mood={currentExercise.character?.mood} />
-          <div className="pt-2">
+          <div className="flex shrink-0 flex-col items-start gap-2">
             {currentExercise.newWordBadge ? <NewWordBadge word={currentNewWord} /> : null}
+            <CharacterAvatar id={currentExercise.character?.id ?? 'bird'} mood={currentExercise.character?.mood} />
           </div>
+
+          {hasPromptBubble ? (
+            <div className="min-w-0 flex-1 pt-1">
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <SpeechBubble>
+                    <p className="text-lg font-black leading-snug text-ink">
+                      {currentExercise.promptSegments?.map((segment, index) => (
+                        <span
+                          key={`${segment.text}-${index}`}
+                          className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
+                        >
+                          {segment.text}
+                        </span>
+                      ))}
+                    </p>
+                  </SpeechBubble>
+                </div>
+                {currentExercise.audio ? <AudioButton onClick={onReplayAudio} iconOnly /> : null}
+              </div>
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex gap-2">
-          {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
-          {currentExercise.type === 'listening_tap' ? <SlowAudioButton onClick={onSlowAudio} /> : null}
-        </div>
-
-        {currentExercise.promptSegments ? (
-          <p className="text-lg font-black text-ink">
-            {currentExercise.promptSegments.map((segment, index) => (
-              <span
-                key={`${segment.text}-${index}`}
-                className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
-              >
-                {segment.text}
-              </span>
-            ))}
-          </p>
+        {!hasPromptBubble ? (
+          <div className="flex gap-2">
+            {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
+            {currentExercise.type === 'listening_tap' ? <SlowAudioButton onClick={onSlowAudio} /> : null}
+          </div>
         ) : null}
 
         {currentExercise.type === 'select_image' ? (

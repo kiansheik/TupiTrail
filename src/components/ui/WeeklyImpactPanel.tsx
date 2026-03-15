@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 
+import { cn } from '@/lib/utils/classNames'
+
 type Pillar = {
   id: string
   title: string
@@ -48,8 +50,8 @@ const ReviewIcon = () => (
   </svg>
 )
 
-const WeekArcIllustration = () => (
-  <svg viewBox="0 0 320 170" className="w-full" aria-hidden>
+const WeekArcIllustration = ({ compact = false }: { compact?: boolean }) => (
+  <svg viewBox="0 0 320 170" className={cn('w-full', compact ? 'h-[95px]' : 'h-[150px]')} aria-hidden>
     <defs>
       <linearGradient id="weekArc" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#94e1c3" />
@@ -109,26 +111,40 @@ const pillars: Pillar[] = [
   },
 ]
 
-export const WeeklyImpactPanel = () => {
+type WeeklyImpactPanelProps = {
+  compact?: boolean
+  className?: string
+}
+
+export const WeeklyImpactPanel = ({ compact = false, className }: WeeklyImpactPanelProps) => {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="rounded-[1.6rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#f0fbf7_0%,#fff7e7_100%)] p-4"
+      className={cn(
+        'rounded-[1.6rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#f0fbf7_0%,#fff7e7_100%)] p-4',
+        compact && 'flex min-h-0 flex-1 flex-col rounded-[1.3rem] p-2.5',
+        className,
+      )}
     >
-      <WeekArcIllustration />
+      <WeekArcIllustration compact={compact} />
 
-      <div className="mt-3 grid gap-2">
+      <div className={cn('mt-3 grid gap-2', compact && 'mt-2 flex-1 gap-1.5')}>
         {pillars.map((pillar) => (
           <article
             key={pillar.id}
-            className="flex items-center gap-3 rounded-2xl border-2 border-ink/10 bg-white/90 p-3"
+            className={cn(
+              'flex items-center gap-3 rounded-2xl border-2 border-ink/10 bg-white/90 p-3',
+              compact && 'gap-2 rounded-xl p-2',
+            )}
           >
-            <div className="shrink-0">{pillar.icon}</div>
+            <div className={cn('shrink-0', compact && 'scale-90')}>{pillar.icon}</div>
             <div>
-              <h3 className="text-base font-black text-ink">{pillar.title}</h3>
-              <p className="text-xs font-bold leading-snug text-ink/70">{pillar.description}</p>
+              <h3 className={cn('text-base font-black text-ink', compact && 'text-sm')}>{pillar.title}</h3>
+              <p className={cn('text-xs font-bold leading-snug text-ink/70', compact && 'text-[11px]')}>
+                {pillar.description}
+              </p>
             </div>
           </article>
         ))}

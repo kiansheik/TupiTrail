@@ -68,22 +68,60 @@ Camadas de suporte:
 Principais arquivos:
 
 - Curso + lookup: `src/data/course/en/course.ts`
-- Lição seed: `src/data/course/en/unit1/lesson1.ts`
+- Lição seed (template linguístico): `src/data/course/en/unit1/lesson1.ts`
 - Onboarding: `src/data/onboarding/en.ts`
 - Strings UI: `src/data/ui/strings.en.ts`
 - Personagens: `src/data/characters/characters.ts`
+- Lexicon e mapeamento: `src/data/lexicon/*`
 
 Regra prática: se algo puder mudar no futuro sem alterar lógica, coloque em `data/`.
 
 ## Como adicionar nova lição
 
-1. Crie um arquivo em `src/data/course/en/unitX/lessonY.ts` com `LessonData`.
-2. Adicione a lição no `courseEn` em `src/data/course/en/course.ts`.
+1. Crie um arquivo em `src/data/course/en/unitX/lessonY.ts` com `LessonTemplateData`.
+2. Marque cada termo/frase com idioma (`enText`, `ptBrText`, `tupiText`).
+3. Materialize com `materializeLesson(...)` ao montar o `courseEn`.
 3. Garanta IDs únicos para `lesson.id` e `exercise.id`.
 4. Ajuste `pathNodesSeed` para refletir desbloqueios no mapa.
 5. Se necessário, inclua novas strings em `src/data/ui/strings.en.ts`.
 
 Sem mudanças no `LessonRunnerScreen`, a engine renderiza qualquer lição compatível com os tipos.
+
+## Camada linguística (`en -> tupi`)
+
+O conteúdo linguístico agora aceita metadados de idioma por termo/frase:
+
+- `enText('coffee')`
+- `ptBrText('por favor')`
+- `tupiText('...')`
+
+Isso permite:
+
+- continuar definindo lições em inglês;
+- traduzir depois via mapa único;
+- propagar a tradução automaticamente em todo lugar onde a expressão aparece.
+
+Arquivos principais:
+
+- `src/data/lexicon/types.ts`
+- `src/data/lexicon/helpers.ts`
+- `src/data/lexicon/enToTupi.map.ts`
+- `src/data/lexicon/materializeLesson.ts`
+
+Target de build para o lexicon:
+
+- padrão: `en` (sem substituição)
+- para ativar substituição: `VITE_LEXICON_TARGET_LANG=tupi`
+
+Exemplo:
+
+```bash
+VITE_LEXICON_TARGET_LANG=tupi npm run build
+```
+
+Inventário lexical único extraído da lição:
+
+- `lessonLexiconInventory` em `src/data/course/en/course.ts`
 
 ## Áudio
 

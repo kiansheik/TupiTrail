@@ -1,5 +1,9 @@
 import type { CourseData, LessonMapNode } from '@/core/lesson-engine/types'
-import { lesson1 } from '@/data/course/en/unit1/lesson1'
+import { lesson1Template } from '@/data/course/en/unit1/lesson1'
+import { extractLessonLexiconInventory, materializeLesson } from '@/data/lexicon'
+
+const lesson1 = materializeLesson(lesson1Template)
+export const lessonLexiconInventory = extractLessonLexiconInventory(lesson1Template)
 
 export const courseEn: CourseData = {
   id: 'tupi-proto',

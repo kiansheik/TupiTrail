@@ -10,17 +10,19 @@ export const WeeklyGoalPreviewScreen = () => {
 
   return (
     <ScreenScaffold
+      contentClassName="h-full overflow-y-auto pr-1"
       bottomSlot={<Button onClick={() => navigate('/onboarding/notifications')}>Continuar</Button>}
     >
-      <div className="space-y-4">
+      <div className="flex h-full min-h-0 flex-col gap-3 pb-1">
         <NarratorScene
           title="50 palavras na primeira semana"
           body="Passos curtos, repetição inteligente e revisão guiada."
           characterId="bird"
           mood="encouraging"
           label="Plano rápido"
+          compact
         />
-        <WeeklyImpactPanel />
+        <WeeklyImpactPanel compact />
       </div>
     </ScreenScaffold>
   )
