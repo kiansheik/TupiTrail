@@ -51,7 +51,7 @@ export const NarratorScene = ({
         >
           <p
             className={cn(
-              'font-display text-3xl leading-none text-ink',
+              'font-display text-2xl leading-none text-ink md:text-3xl',
               compact && 'text-[1.6rem]',
               dense && 'text-[1.25rem]',
             )}
@@ -60,7 +60,7 @@ export const NarratorScene = ({
           </p>
           <p
             className={cn(
-              'mt-2 text-sm font-extrabold text-ink/75',
+              'mt-2 text-xs font-extrabold text-ink/75 md:text-sm',
               compact && 'mt-1.5 text-xs',
               dense && 'mt-1 text-[11px]',
             )}
@@ -78,7 +78,7 @@ export const NarratorScene = ({
           <CharacterAvatar
             id={characterId}
             mood={mood}
-            className={dense ? 'h-16 w-16' : compact ? 'h-24 w-24' : 'h-32 w-32'}
+            className={dense ? 'h-16 w-16' : compact ? 'h-24 w-24' : 'h-24 w-24 md:h-32 md:w-32'}
           />
         </motion.div>
 
