@@ -7,6 +7,27 @@ import { Card } from '@/components/ui/Card'
 import { uiStrings } from '@/data/ui'
 import { useAppStore } from '@/store/useAppStore'
 
+const ReminderIllustration = () => (
+  <svg viewBox="0 0 280 180" className="w-full max-w-[280px]" aria-hidden>
+    <defs>
+      <linearGradient id="reminderGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#b7f0d7" />
+        <stop offset="100%" stopColor="#fff2c7" />
+      </linearGradient>
+    </defs>
+
+    <rect x="8" y="10" width="264" height="160" rx="28" fill="url(#reminderGlow)" stroke="#1b2b262e" strokeWidth="3" />
+    <rect x="82" y="36" width="116" height="106" rx="20" fill="#fff" stroke="#1b2b2633" strokeWidth="3" />
+    <rect x="98" y="52" width="84" height="20" rx="8" fill="#e7f6ef" />
+    <circle cx="112" cy="102" r="10" fill="#2eb489" />
+    <path d="M108 102h8M112 98v8" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" />
+    <path d="M132 98h40M132 108h28" stroke="#7bbfa6" strokeWidth="4" strokeLinecap="round" />
+    <circle cx="58" cy="70" r="11" fill="#ffd166" />
+    <circle cx="224" cy="62" r="9" fill="#ff9d7a" />
+    <circle cx="220" cy="130" r="12" fill="#7cc7ff" />
+  </svg>
+)
+
 export const NotificationPromptScreen = () => {
   const navigate = useNavigate()
   const setNotificationPreference = useAppStore((state) => state.setNotificationPreference)
@@ -22,7 +43,13 @@ export const NotificationPromptScreen = () => {
     const permission = await Notification.requestPermission()
     const granted = permission === 'granted'
     setNotificationPreference(true, granted)
-    setStatus(granted ? 'Notificações ativadas.' : 'Sem problema, você pode ativar depois.')
+    setStatus(granted ? 'Notificações ativadas. Avançando...' : 'Sem problema, você pode ativar depois.')
+
+    if (granted) {
+      window.setTimeout(() => {
+        navigate('/onboarding/benefits')
+      }, 500)
+    }
   }
 
   const continueFlow = () => {
@@ -33,6 +60,7 @@ export const NotificationPromptScreen = () => {
     <ScreenScaffold
       title={uiStrings.notificationsTitle}
       subtitle="No prototype, lembretes reais são best effort."
+      contentClassName="h-full"
       bottomSlot={
         <div className="space-y-2">
           <Button onClick={requestPermission}>{uiStrings.notificationsAllow}</Button>
@@ -42,14 +70,10 @@ export const NotificationPromptScreen = () => {
         </div>
       }
     >
-      <Card>
-        <p className="text-sm font-bold text-ink/70">{status}</p>
+      <Card className="flex h-full flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
+        <ReminderIllustration />
+        <p className="text-sm font-bold leading-snug text-ink/70">{status}</p>
       </Card>
-      <div className="mt-4">
-        <Button variant="ghost" onClick={continueFlow}>
-          Continuar sem notificações
-        </Button>
-      </div>
     </ScreenScaffold>
   )
 }

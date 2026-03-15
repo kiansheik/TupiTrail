@@ -2,6 +2,7 @@ import type { PropsWithChildren, ReactNode } from 'react'
 
 import { BottomActionBar } from '@/components/layout/BottomActionBar'
 import { TopProgressBar } from '@/components/layout/TopProgressBar'
+import { cn } from '@/lib/utils/classNames'
 
 type ScreenScaffoldProps = PropsWithChildren<{
   title?: string
@@ -9,6 +10,7 @@ type ScreenScaffoldProps = PropsWithChildren<{
   progress?: number
   combo?: number
   bottomSlot?: ReactNode
+  contentClassName?: string
 }>
 
 export const ScreenScaffold = ({
@@ -18,14 +20,15 @@ export const ScreenScaffold = ({
   progress,
   combo,
   bottomSlot,
+  contentClassName,
 }: ScreenScaffoldProps) => {
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       {typeof progress === 'number' ? <TopProgressBar progress={progress} combo={combo} /> : null}
-      <main className="flex-1 px-4 pb-4 pt-5">
+      <main className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-5">
         {title ? <h1 className="font-display text-3xl leading-tight text-ink">{title}</h1> : null}
         {subtitle ? <p className="mt-2 text-base font-semibold text-ink/70">{subtitle}</p> : null}
-        <div className="mt-6">{children}</div>
+        <div className={cn('mt-4 flex min-h-0 flex-1 flex-col', contentClassName)}>{children}</div>
       </main>
       {bottomSlot ? <BottomActionBar>{bottomSlot}</BottomActionBar> : null}
     </div>

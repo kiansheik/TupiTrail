@@ -29,8 +29,30 @@ export const confidenceOptions = [
   { id: 'level3', label: 'Tenho confiança', description: 'Consigo formar frases simples' },
 ]
 
-export const threeMonthBenefits = [
-  'Falar com mais confiança em situações reais.',
-  'Construir vocabulário útil para o dia a dia.',
-  'Consolidar um hábito consistente de estudo.',
+export type ThreeMonthBenefit = {
+  id: 'confidence' | 'vocabulary' | 'habit'
+  title: string
+  description: string
+  tone: 'mint' | 'amber' | 'sky'
+}
+
+export const threeMonthBenefits: ThreeMonthBenefit[] = [
+  {
+    id: 'confidence',
+    title: 'Falar com mais confiança',
+    description: 'Você responde com naturalidade em situações reais.',
+    tone: 'mint',
+  },
+  {
+    id: 'vocabulary',
+    title: 'Vocabulário útil no dia a dia',
+    description: 'Mais palavras práticas para conversar sem travar.',
+    tone: 'amber',
+  },
+  {
+    id: 'habit',
+    title: 'Hábito consistente de estudo',
+    description: 'Sessões curtas viram rotina sem desgaste mental.',
+    tone: 'sky',
+  },
 ]
