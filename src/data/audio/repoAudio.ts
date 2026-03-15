@@ -7,10 +7,10 @@ type RepoAudioOptions = {
 }
 
 const toRepoPath = (value: string): string => {
-  if (value.startsWith('/')) {
-    return value
-  }
-  return `/audio/${value.replace(/^audio\//, '').replace(/^\/+/, '')}`
+  // value can be 'unit1/...' or 'audio/unit1/...'
+  const audioPath = value.startsWith('audio/') ? value : `audio/${value}`
+  const publicPath = `${import.meta.env.BASE_URL}${audioPath}`
+  return publicPath
 }
 
 export const repoAudio = (src: string, options?: RepoAudioOptions): LessonAudioSpec => ({
