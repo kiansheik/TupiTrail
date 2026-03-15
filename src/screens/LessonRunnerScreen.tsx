@@ -341,10 +341,25 @@ export const LessonRunnerScreen = () => {
         <ExerciseHeader exercise={currentExercise} currentNewWord={currentNewWord} onReplayAudio={onReplayAudio} />
 
         {!headerMeta.hasPromptBubble && !headerMeta.showSelectImageWordRow ? (
-          <div className="flex gap-2">
-            {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
-            {currentExercise.type === 'listening_tap' ? <SlowAudioButton onClick={onSlowAudio} /> : null}
-          </div>
+          currentExercise.type === 'listening_tap' ? (
+            <div className="inline-flex w-fit overflow-hidden rounded-chunky border-2 border-ink/20 bg-white shadow-chunky">
+              {currentExercise.audio ? (
+                <AudioButton
+                  onClick={onReplayAudio}
+                  iconOnly
+                  className="h-11 w-14 rounded-none border-0 border-r-2 border-ink/15 px-0 py-0 text-xl shadow-none"
+                />
+              ) : null}
+              <SlowAudioButton
+                onClick={onSlowAudio}
+                className="h-11 w-14 rounded-none border-0 px-0 py-0 text-xl shadow-none"
+              />
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
+            </div>
+          )
         ) : null}
 
         {currentExercise.type === 'select_image' ? (
