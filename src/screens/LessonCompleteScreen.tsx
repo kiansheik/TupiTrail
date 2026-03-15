@@ -16,9 +16,10 @@ export const LessonCompleteScreen = () => {
   const params = useParams<{ lessonId: string }>()
   const lessonId = params.lessonId ?? 'unit1-lesson1'
 
-  const result = useLessonSessionStore((state) => state.buildLessonResult())
+  const buildLessonResult = useLessonSessionStore((state) => state.buildLessonResult)
   const resetSession = useLessonSessionStore((state) => state.reset)
   const applyLessonResult = useAppStore((state) => state.applyLessonResult)
+  const result = buildLessonResult()
 
   useEffect(() => {
     playSfx('finish')

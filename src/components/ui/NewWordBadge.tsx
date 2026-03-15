@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 
 import { cn } from '@/lib/utils/classNames'
@@ -82,10 +82,70 @@ type NewWordBadgeProps = {
 type NewWordWordProps = {
   word: string
   className?: string
+  autoFit?: boolean
+  minFontSizePx?: number
+  maxFontSizePx?: number
 }
 
-export const NewWordWord = ({ word, className }: NewWordWordProps) => {
-  return <span className={cn('new-word-fancy inline-block', className)}>{prettyWord(word)}</span>
+export const NewWordWord = ({
+  word,
+  className,
+  autoFit = false,
+  minFontSizePx = 24,
+  maxFontSizePx = 38,
+}: NewWordWordProps) => {
+  const textRef = useRef<HTMLSpanElement | null>(null)
+  const pretty = prettyWord(word)
+
+  useEffect(() => {
+    if (!autoFit || !textRef.current) {
+      return
+    }
+
+    const fit = () => {
+      const textNode = textRef.current
+      const container = textNode?.parentElement
+      if (!textNode || !container) {
+        return
+      }
+
+      let next = maxFontSizePx
+      textNode.style.fontSize = `${next}px`
+
+      while (next > minFontSizePx && textNode.scrollWidth > container.clientWidth) {
+        next -= 1
+        textNode.style.fontSize = `${next}px`
+      }
+    }
+
+    fit()
+
+    if (typeof ResizeObserver === 'undefined') {
+      return
+    }
+
+    const observer = new ResizeObserver(() => {
+      fit()
+    })
+    observer.observe(textRef.current)
+    if (textRef.current.parentElement) {
+      observer.observe(textRef.current.parentElement)
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [autoFit, minFontSizePx, maxFontSizePx, pretty])
+
+  return (
+    <span
+      ref={textRef}
+      style={autoFit ? { fontSize: `${maxFontSizePx}px`, lineHeight: 1.02 } : undefined}
+      className={cn('new-word-fancy inline-block', className)}
+    >
+      {pretty}
+    </span>
+  )
 }
 
 export const NewWordBadge = ({ word }: NewWordBadgeProps) => {

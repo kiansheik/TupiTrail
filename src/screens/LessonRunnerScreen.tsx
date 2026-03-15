@@ -7,17 +7,16 @@ import { TokenTranslateExercise } from '@/components/exercises/TokenTranslateExe
 import { MultipleChoiceExercise } from '@/components/exercises/MultipleChoiceExercise'
 import { DialogueChoiceExercise } from '@/components/exercises/DialogueChoiceExercise'
 import { ListeningTapExercise } from '@/components/exercises/ListeningTapExercise'
+import { ExerciseHeader } from '@/components/exercises/ExerciseHeader'
+import { getExerciseHeaderMeta } from '@/components/exercises/exerciseHeaderMeta'
 import { ScreenScaffold } from '@/components/layout/ScreenScaffold'
 import { AudioButton } from '@/components/ui/AudioButton'
 import { Button } from '@/components/ui/Button'
-import { CharacterAvatar } from '@/components/ui/CharacterAvatar'
 import { ComboBanner } from '@/components/ui/ComboBanner'
 import { FeedbackPanel } from '@/components/ui/FeedbackPanel'
-import { NewWordBadge, NewWordWord } from '@/components/ui/NewWordBadge'
 import { SlowAudioButton } from '@/components/ui/SlowAudioButton'
-import { SpeechBubble } from '@/components/ui/SpeechBubble'
 import { evaluateExercise } from '@/core/lesson-engine/evaluator'
-import { getCurrentExerciseId } from '@/core/lesson-engine/session'
+import { getCurrentExerciseId, type LessonQueueState } from '@/core/lesson-engine/session'
 import type { Exercise, UserAnswer } from '@/core/lesson-engine/types'
 import { playSfx } from '@/lib/audio/sfx'
 import { playAudioSpec } from '@/lib/audio/speech'
@@ -136,6 +135,31 @@ const getAudioLabel = (exercise: Exercise): string => {
   return '🔊 Escutar'
 }
 
+const computeSessionProgress = (queueState: LessonQueueState | null, totalExercises: number): number => {
+  if (!queueState || totalExercises <= 0) {
+    return 0
+  }
+
+  const reviewTotal = queueState.firstPassMistakes.length
+  const reviewRemaining = queueState.reviewQueue.length
+  const totalSteps = totalExercises + reviewTotal
+  if (totalSteps <= 0) {
+    return 0
+  }
+
+  if (queueState.phase === 'complete') {
+    return 100
+  }
+
+  const mainCompleted = Math.min(queueState.mainIndex, totalExercises)
+  if (queueState.phase === 'main') {
+    return Math.round((mainCompleted / totalSteps) * 100)
+  }
+
+  const correctedReviewCount = Math.max(0, reviewTotal - reviewRemaining)
+  return Math.round(((totalExercises + correctedReviewCount) / totalSteps) * 100)
+}
+
 export const LessonRunnerScreen = () => {
   const navigate = useNavigate()
   const params = useParams<{ lessonId: string }>()
@@ -164,9 +188,8 @@ export const LessonRunnerScreen = () => {
 
   const totalExercises = lesson?.exercises.length ?? 1
   const mainIndex = queueState?.mainIndex ?? 0
-  const rawProgress = Math.round((Math.min(mainIndex, totalExercises) / totalExercises) * 100)
-  const progress =
-    queueState?.phase === 'main' && mainIndex === 0 ? Math.max(rawProgress, 8) : rawProgress
+  const rawProgress = computeSessionProgress(queueState, totalExercises)
+  const progress = queueState?.phase === 'main' && mainIndex === 0 ? Math.max(rawProgress, 8) : rawProgress
 
   useEffect(() => {
     if (!currentExercise || feedback) {
@@ -272,19 +295,7 @@ export const LessonRunnerScreen = () => {
     : evaluateExercise(currentExercise, toUserAnswer(currentExercise, draft))
   const currentNewWord = extractNewWord(currentExercise)
   const audioLabel = getAudioLabel(currentExercise)
-  const hasPromptBubble = Boolean(currentExercise.promptSegments?.length)
-  const showSelectImageWordRow =
-    currentExercise.type === 'select_image' && Boolean(currentExercise.newWordBadge) && Boolean(currentNewWord)
-  const multipleChoicePromptText =
-    currentExercise.type === 'multiple_choice_translation' ? currentExercise.prompt : null
-  const showMultipleChoiceHeaderRow = Boolean(multipleChoicePromptText)
-  const dialogueHeaderText =
-    currentExercise.type === 'dialogue_choice'
-      ? currentExercise.dialogue.find(
-          (line) => line.speaker.trim().toLowerCase() === 'server' && !line.isBlank && Boolean(line.text),
-        )?.text ?? null
-      : null
-  const showDialogueHeaderRow = Boolean(dialogueHeaderText)
+  const headerMeta = getExerciseHeaderMeta(currentExercise, currentNewWord)
 
   return (
     <ScreenScaffold
@@ -327,63 +338,9 @@ export const LessonRunnerScreen = () => {
       <div className="space-y-4">
         <ComboBanner combo={combo.current} />
 
-        <div className="flex items-start gap-3">
-          <div className="flex shrink-0 flex-col items-start gap-2">
-            {currentExercise.newWordBadge ? <NewWordBadge word={currentNewWord} /> : null}
-            <CharacterAvatar id={currentExercise.character?.id ?? 'bird'} mood={currentExercise.character?.mood} />
-          </div>
+        <ExerciseHeader exercise={currentExercise} currentNewWord={currentNewWord} onReplayAudio={onReplayAudio} />
 
-          {hasPromptBubble ? (
-            <div className="min-w-0 flex-1 pt-1">
-              <div className="flex items-start gap-2">
-                <div className="min-w-0 flex-1">
-                  <SpeechBubble>
-                    <p className="text-lg font-black leading-snug text-ink">
-                      {currentExercise.promptSegments?.map((segment, index) => (
-                        <span
-                          key={`${segment.text}-${index}`}
-                          className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
-                        >
-                          {segment.text}
-                        </span>
-                      ))}
-                    </p>
-                  </SpeechBubble>
-                </div>
-                {currentExercise.audio ? <AudioButton onClick={onReplayAudio} iconOnly /> : null}
-              </div>
-            </div>
-          ) : null}
-
-          {showSelectImageWordRow ? (
-            <div className="flex min-w-0 flex-1 items-center gap-2 pt-9">
-              {currentExercise.audio ? <AudioButton onClick={onReplayAudio} iconOnly /> : null}
-              {currentNewWord ? (
-                <NewWordWord word={currentNewWord} className="truncate text-5xl font-black uppercase leading-none" />
-              ) : null}
-            </div>
-          ) : null}
-
-          {showDialogueHeaderRow ? (
-            <div className="min-w-0 flex-1 pt-1">
-              <p className="mb-1 text-xs font-black uppercase text-ink/45">Server</p>
-              <SpeechBubble className="border-[#b8ccff] bg-[#eef4ff]" tailClassName="border-[#b8ccff] bg-[#eef4ff]">
-                {dialogueHeaderText}
-              </SpeechBubble>
-            </div>
-          ) : null}
-
-          {showMultipleChoiceHeaderRow ? (
-            <div className="min-w-0 flex-1 pt-1">
-              <p className="mb-1 text-xs font-black uppercase text-ink/45">Server</p>
-              <SpeechBubble className="border-[#b8ccff] bg-[#eef4ff]" tailClassName="border-[#b8ccff] bg-[#eef4ff]">
-                <p className="text-xl font-black leading-tight text-ink">{multipleChoicePromptText}</p>
-              </SpeechBubble>
-            </div>
-          ) : null}
-        </div>
-
-        {!hasPromptBubble && !showSelectImageWordRow ? (
+        {!headerMeta.hasPromptBubble && !headerMeta.showSelectImageWordRow ? (
           <div className="flex gap-2">
             {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
             {currentExercise.type === 'listening_tap' ? <SlowAudioButton onClick={onSlowAudio} /> : null}
@@ -441,7 +398,7 @@ export const LessonRunnerScreen = () => {
           <DialogueChoiceExercise
             exercise={currentExercise}
             selectedChoice={draft.choice}
-            omitFirstServerLine={showDialogueHeaderRow}
+            omitFirstServerLine={Boolean(headerMeta.dialogueHeaderText)}
             onSelect={(choice) => {
               if (!currentExerciseId) {
                 return

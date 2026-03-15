@@ -27,7 +27,7 @@ const HomeRoute = () => {
 
 export const AppRouter = () => {
   return (
-    <HashRouter>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/" element={<HomeRoute />} />
 

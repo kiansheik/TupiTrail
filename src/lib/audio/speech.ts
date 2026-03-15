@@ -3,7 +3,9 @@ import type { AudioSpec } from '@/core/lesson-engine/types'
 let currentAudio: HTMLAudioElement | null = null
 
 export const stopSpeech = (): void => {
-  window.speechSynthesis.cancel()
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
   if (currentAudio) {
     currentAudio.pause()
     currentAudio.currentTime = 0
@@ -27,8 +29,26 @@ export const playAudioSpec = (audioSpec: AudioSpec | undefined): void => {
     return
   }
 
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    return
+  }
+
+  const synth = window.speechSynthesis
+  synth.cancel()
+  if (synth.paused) {
+    synth.resume()
+  }
+
   const utterance = new SpeechSynthesisUtterance(audioSpec.text)
   utterance.lang = audioSpec.lang
   utterance.rate = audioSpec.rate ?? 1
-  window.speechSynthesis.speak(utterance)
+
+  // Some browsers are flaky if speak() is called in the same tick as cancel().
+  requestAnimationFrame(() => {
+    try {
+      synth.speak(utterance)
+    } catch {
+      // ignore synthesis runtime failures in prototype mode
+    }
+  })
 }

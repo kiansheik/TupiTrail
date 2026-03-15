@@ -1,37 +1,44 @@
-.PHONY: help lint build test dev local-deploy deploy-gh-pages
+.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map
+
+LEXICON_TARGET_LANG ?= en
 
 help:
 	@echo "Available targets:"
 	@echo "  make local-deploy  # lint -> build -> test -> start local dev server"
+	@echo "    with Tupi map: make local-deploy LEXICON_TARGET_LANG=tupi"
 	@echo "  make deploy-gh-pages [PAGES_MSG='...']"
 	@echo "  make lint"
 	@echo "  make build"
 	@echo "  make test"
 	@echo "  make dev"
+	@echo "  make generate-englishtotupi-map  # auto-generate en->tupi map keys from lesson data"
 
 lint:
 	npm run lint
 
 build:
-	npm run build
+	VITE_LEXICON_TARGET_LANG=$(LEXICON_TARGET_LANG) npm run build
 
 test:
 	npm run test:run
 
 dev:
-	npm run dev
+	VITE_LEXICON_TARGET_LANG=$(LEXICON_TARGET_LANG) npm run dev
+
+generate-englishtotupi-map:
+	node scripts/generate-en-to-tupi-map.mjs
 
 local-deploy:
 	npm run lint
-	npm run build
+	VITE_LEXICON_TARGET_LANG=$(LEXICON_TARGET_LANG) npm run build
 	npm run test:run
-	npm run dev
+	VITE_LEXICON_TARGET_LANG=$(LEXICON_TARGET_LANG) npm run dev
 
 PAGES_MSG ?= deploy: publish latest dist to gh-pages
 
 deploy-gh-pages:
 	npm run lint
-	npm run build
+	VITE_LEXICON_TARGET_LANG=$(LEXICON_TARGET_LANG) npm run build
 	npm run test:run
 	git add .
 	@if git diff --cached --quiet; then \

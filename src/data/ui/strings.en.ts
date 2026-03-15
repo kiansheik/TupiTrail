@@ -8,6 +8,7 @@ export const uiStrings = {
   explainAnswer: 'Explique minha resposta',
   explainMistake: 'Explique meu erro',
   noPenaltyMistakes: 'Vamos corrigir alguns erros. Sem penalidade.',
+  reviewOrderHint: '',
   claimXp: 'Receber XP',
   chooseGoal: 'Escolha sua meta de ofensiva',
   addToHome: 'Adicionar à tela inicial',

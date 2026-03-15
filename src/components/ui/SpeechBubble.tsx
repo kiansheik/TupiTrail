@@ -22,7 +22,7 @@ export const SpeechBubble = ({ children, tail = 'left', className, tailClassName
       <div
         className={cn(
           'absolute -bottom-2 h-4 w-4 border-ink/20 bg-white',
-          isRight ? 'right-6 -rotate-45 border-b-2 border-l-2' : 'left-6 rotate-45 border-b-2 border-r-2',
+          isRight ? 'right-[14px] -rotate-45 border-b-2 border-l-2' : 'left-6 rotate-45 border-b-2 border-r-2',
           tailClassName,
         )}
       />

@@ -33,42 +33,24 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
         <circle cx="50" cy="50" r="42" fill="#2eb489" />
         {blink ? (
           <>
-            <motion.ellipse
-              cx="36"
-              cy="44"
-              rx="6"
-              ry="6"
-              fill="#fff"
-              animate={{ ry: [6, 6, 0.9, 6, 6] }}
+            <motion.g
+              transform="translate(36 44)"
+              animate={{ scaleY: [1, 1, 0.14, 1, 1] }}
               transition={blinkTransition}
-            />
-            <motion.ellipse
-              cx="64"
-              cy="44"
-              rx="6"
-              ry="6"
-              fill="#fff"
-              animate={{ ry: [6, 6, 0.9, 6, 6] }}
+              style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+            >
+              <ellipse cx="0" cy="0" rx="6" ry="6" fill="#fff" />
+              <ellipse cx="0" cy="0" rx="2.5" ry="2.5" fill="#1b2b26" />
+            </motion.g>
+            <motion.g
+              transform="translate(64 44)"
+              animate={{ scaleY: [1, 1, 0.14, 1, 1] }}
               transition={blinkTransition}
-            />
-            <motion.ellipse
-              cx="36"
-              cy="44"
-              rx="2.5"
-              ry="2.5"
-              fill="#1b2b26"
-              animate={{ ry: [2.5, 2.5, 0.6, 2.5, 2.5] }}
-              transition={blinkTransition}
-            />
-            <motion.ellipse
-              cx="64"
-              cy="44"
-              rx="2.5"
-              ry="2.5"
-              fill="#1b2b26"
-              animate={{ ry: [2.5, 2.5, 0.6, 2.5, 2.5] }}
-              transition={blinkTransition}
-            />
+              style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+            >
+              <ellipse cx="0" cy="0" rx="6" ry="6" fill="#fff" />
+              <ellipse cx="0" cy="0" rx="2.5" ry="2.5" fill="#1b2b26" />
+            </motion.g>
           </>
         ) : (
           <>
