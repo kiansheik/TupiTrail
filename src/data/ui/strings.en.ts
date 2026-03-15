@@ -1,0 +1,27 @@
+export const uiStrings = {
+  appName: 'Tupi Trail',
+  startNow: 'Começar agora',
+  alreadyHaveAccount: 'Já tenho uma conta',
+  continue: 'Continuar',
+  check: 'Verificar',
+  next: 'Próximo',
+  explainAnswer: 'Explique minha resposta',
+  explainMistake: 'Explique meu erro',
+  noPenaltyMistakes: 'Vamos corrigir alguns erros. Sem penalidade.',
+  claimXp: 'Receber XP',
+  chooseGoal: 'Escolha sua meta de ofensiva',
+  addToHome: 'Adicionar à tela inicial',
+  skipForNow: 'Agora não',
+  mapTitle: 'Trilha de Lições',
+  lessonReady: 'Leva cerca de 2 minutos',
+  notificationsTitle: 'Quer lembretes diários?',
+  notificationsAllow: 'Ativar lembretes',
+  notificationsLater: 'Agora não',
+  streakIgniteTitle: 'Ofensiva iniciada!',
+  goal3: '3 dias',
+  goal5: '5 dias',
+  goal7: '7 dias',
+  noEnergyHint: 'Não precisa de energia para revisão.',
+} as const
+
+export type UiStrings = typeof uiStrings

@@ -1,0 +1,140 @@
+Eu quero criar a minha própria versão de duolingo mas para tupi. Eu não quero recriar tudo, só as partes de aprendizagem e UI para conseguir ser o mais próximo possível ao Duolingo hoje. Tenho na minha mão o aplicativo e vou descrever como funciona esse aplicativo pra você:
+
+Entra com o Duo (coruja):
+"começar agora" (em duo verdo com texto preto em baixo)
+ou
+"Já tem uma conta" (em preto com texto em duo verde, o contrario)
+
+Entrando agora com "Começar agora, pq não tenho conta, o Duo fala pra mim e waves his hand. "Oi, eu sou Duo!"
+
+Click "Continuar"
+
+"só tenho 8 perguntas rápidas e depois vamos para a sua primeira lição!"
+
+"O que você gostaria de aprender?"
+
+Para nosso caso, isso não é importante pq a gente vai só fazer tupi por enquanto.
+
+A gente vai tentar traduzir e replicar a aula de Inglês. Agora tá me perguntando "Quanto você entende de Ingles?"
+
+1-5 em nível de confiança entre "não sei nada" e "consigo falar sobre a maioria das coisas"
+
+Como a maioria dos Brasileiros não sabem quase nada sobre Tupi, vamos replicar essa valor 1 de Duo.
+
+Agora tá me dizendo que vou aprender 50 palavras na primeira semana. Isso é importante pra gente replicar. Permitir Notificações agora mesmo no processo de começar.
+
+Agora o Duo tá falando pra mim
+
+"Veja o que você vai conseguir fazer em 3 meses!"
+
+Falar com confiança
+
+Adquirir vocabulário
+
+Criar o Hábito de aprender
+
+é tem UI para isso que você provavelmente conhece.
+
+Eu estou notando que antes de começar a lição o Duo falou
+
+"Certo! Vamos fazer a primeira lição? Leva só *2 minutinhos*." Eu percebi que isso pode ser bom psicologicamente pq o usuário já sabe para se organizar para completar a lição em 2 minutos mais ou menos. Estimativa de tempo investido e apresentação dela deve ser uma das nossa ferramentas quando a gente defina os módulos.
+
+"Continuar"
+
+Agora realmente começou a lição. Vou anotar a UI para você conseguir ter uma ideia do que a gente vai replicar.
+
+tem um X no top left corner, para sair, e no mesmo nível no X tem o progress bar horizontal em grey e Duo verde.
+
+Depois tem embaixo um icon com "Palavra Nova", mostrando para o usuário que nunca a viu ainda. Embaixo disso são as instruções para esse tipo de módulo dentro da primeira lição (vai ter muitos tipos). Este módulo é do tipo "Selecione a imagem correta:
+Aí tem áudio icon, automaticamente toca áudio, e dá pra clicar pra reproduzir. e tem escrito em inglês "coffee" (kapery em tupi):
+Depois mostra açúcar (é um cartoon de açucar), chá (tb), leite, café, tudo em portuguese e com um icon para representar o que é mais abstratamente para qualquer pessoa entender, mesmo que não fala portugês.
+
+Coloquei leite pra ver como é quando erra e tocou um som de erro "dadDUng", mostrou depois de clicar "Verificar" e tocar esse som, Incorreto com um X preto em um círculo vermelho e escrito ao lado "Incorreto"
+
+Resposta Certa:
+café
+Ok!
+
+Depois não vai fazer o mesmo de novo, só continua para tea, com as mesma opções e imagens e estilo.
+
+Ao acertar, tem um som de sucesso! gostei de ouvir. Green circle with black checkmark "Excelente!"
+Continuar
+
+Agora tem um novo tipo de módulo. Esse me deu 5 palavras aleatórias "Café" "favor" "obrigado" "por" "água" no meio embaixo. Em cima disso há uma linha para escrever onde vão as opções com animação ao clicá-las, e clicando de novo da linha, eles voltam para seu lugar inicial, onde havia um retángulo curvado em cinza no lugar de sua ausência. é tem um icone de um cara que está levamente animated swaying back and forth, very cute. De novo, dá pra clicar na palavra que precisa traduzir, a instrução é "Traduza esta frase:" e vai ler a palavra de voz alta. Ao clicar, essa tem um botão em cima do continuar que é "Explique minha resposta" que seria bom para nos implementarmos como opcional para adicionar a qualquer pergunta específica nos dados onde definimos as questões que os módulos vão representar.
+
+Agora de novo é o mesmo tipo de módulo para selecionar uma(s) palavra entra muitas e depois clicar verificar, dessa vez é uma figurinha de uma mulher e não um homen. Antes era um homen branco, dessa vez é uma mulher negra. Vamos replicar esse flow. Dessa vez depois de verificar foi o mesmo som e mesmo "explique..." e "continuar embaixo em mais verde. 
+
+Agora é o mesmo módulo, traduza esta frase, mas uma frase um pouquinho mais complexa. "Cofee *or* tea?" e esse _or_ está em roxo, mesmo com a notícia que vimos antes de "Palavra Nova" provavelmente para criar uma link na mente entre a palavra ser nova. Ela também estava pulando muito fofo. parece shiny também. Essas animações do texto provavelmente são importantes para replicar. 
+
+Dessa vez eu errei, e tem "Explique meu erro", que me leva para um UI com cada palavra usada na frase, e basicamente uma explicação gramatical da palavra em geral junto com o que ajuda neste caso. 
+
+Agora tem mais um tipo de módulo.
+
+Escolha a tradução correta:
+
+Tem a mulher de antes, com um cartoon speech bubble "Bem-vindo" e como já vimos essa palavra antes, não tem aquela "palavra nova" tal. Tem tres opções em barras horizontais "Coffee" "tea" "welcome" então essa pergunta é pra ser mais óbvia  me parece porque café e chá tem nada a ver com "welcome".
+próxima pergunta
+Dessa vez é aquele outro módulo de Traduza esta frase com um homen icon, parece southeast asian, ou brazilian, "Coffee, *please*" de novo com essa palavra nova estilo, as opções mara mover as palavras na linha na ordem certa, com mais umas palavras que tem nada a ver pra ficar mais tricky. neste caso 2 palavras em inglês viram 3 em portugues "Café por favor"
+
+próxima pergunta tem escolha horizontal com a mulher de antes "Café"
+
+Please, coffee, or
+
+Quando eu respondi certamente 3 vezes in a row, a cor do progress bar muda para ouro, e tá escrita, crescendo com animação COMBO x3, isso dever ser bom para dopamina do usuário. "Boa!" tá escrita em baixo. Próxima.
+
+Agora esse módulo parece um pouco diferente. Tem a cara do cara southeast asian/brazilian do antes perguntando "Tea or coffee?" em um diálogo que parece um chat, e outro icon com um blank line de um novo cara. embaixo tem só duas opções horizontais: "Welcome.", "Tea, please." COMBO x4. "Boa! Significado: Chá, por favor."
+
+Novo tipo de módulo:
+
+"Toque no que escutar:"
+
+Tem a mulher de antes mas o cartoon speech bubble só tem icon de loudspeaker de antes sem a palavra escrita, isso tests listening. ao lado também tem icon de um turtle que lê o mesmo audio mais devagar. 
+
+tem a linha branca com as opções embaixo que podem se locomever ao tocar para a linha com as opções "milk" "or" "Tea" "with". A certa é "tea" Acertei. "É isso ai! Singificado:
+Chá."
+
+próxima:
+uma animação de Duo pulando de alegria mostrou antes dessa pergunta com COMBO 6 escrita, isso é bom para o usuário.
+
+Agora é completar a conversa de novo. um cara branco alternativo com metade da cabeça shaved falando para a mulher de antes "Tea or coffee?" as opções "Coffee, please." "Welcome!" "Certo!" Parece que as respostas de afirmação ou negativo estão cycling entre várias opções iguais para a situação, para não ficar chata. 
+
+Próxima pergunta é o módulo de escutar sem ver escrita e construir a frase escolhendo entra opções "tea" com o turtle, você lembra. "coffee" "or" "sugar" "tea"
+
+próximo é escolher entra 3 com a palavra escrita mas sem som e a mulher de antes falando essa palavra com um cartoon speech bubble "chá"
+
+com as opções "or" "welcome" "tea"
+
+Agora é a pessoa não binário está falando com o urso (não tipo, gay, mas um animal de verdade). um diálogo "Coffe or Tea?" e o bear com blank line.
+
+"Coffee, please."
+"Welcome."
+
+Próxima "escolha a tradução correta" entra 3 com a mulher de antes com a palavra sem escrita sem áudio "por favor"
+
+"please"
+"welcome"
+"coffee"
+
+Agora o Duo antes da próxima chegou com animação waving at me smiling dizendo "Vamos corrigir alguns erros. Não precisa de energia!" Isso é importante para acalmar o aluno que quer jogar e não quer aprender.
+
+Agora está me mestrando no que eu errei. simplesmente refiz tudo que errei anteriormente, na ordem em que errei. Isso é bom para ter certeza que o aluno consegui aprender. 
+
+Agora a lição finalmente está concluida e tocou trumpets "da-DAHHHH" em triumph depois mostrou uma animação do Duo muito fofo pressing his cheeks up like an anime character, very cute. e animou the growing of my "TOTAL DE XP: 23 *emoji de lightning bolt" "BOA: 83%" (giving me a compliment based on how well I did, always positive) "INCANSÁVEL: 44:08" (time, calling me a complement that is positive based on my time no matter how fast or slow I went)
+
+Agora posso ficar nesse view, e tem botão em light blue embaixo "RECEBER XP" eu preciso ativamente, para dopamina, receber meu XP. Depois o Duo fala, parecendo professor oak do começo do pokemon, "Muito bom! Agora vamos criar o hábito de praticar todo dia."
+
+Continuar.
+
+Agora uma animação com sons agradáveis de meu flame sendo lit. "1 dia de ofensiva"
+
+e mostra a semana embaixo com "Dom Seg, ..." e um circulo e o nome em cinza, mas hoje que é Dom, está com um orange text e orange circulo com check mark em preto. 
+
+e o único botão para apertar é "VOU ME DEDICAR" muito psicológic.
+
+Depois pede "Escolha uma meta de ofensiva e se comprometa com o seu aprendizado!" e tem "3 dias de ofensiva; boa", "5 ...; ótima" "7...; Incrível"  Deposi ele me dá alguma moeda como cristais ou alguma coisa, você deve saber mais. e peça para instalar na tela inicial. Agora deu, e posso accessar o mapa de lições que parece mario party ou um board game, que podemos encher com mais lições combinando esses e futuros módulos, definindo tudo em dados, e o aplicativo simplesmente ingere.
+
+Agora que terminou a explicação da primeira lição de duolingo, a minha meta é para replicar quão próximo possível, para primeiramente mobile mas também desktop, dentro de HTML para ser deployed no Github Pages statically. Podemos salvar os dados de usuários em local storage, claro que isso não serve para um app de produção, mas por enquanto só quero algo para usar mesmo e desse jeito dá para voltar no mesmo aparelho e o progresso ser salvo no browser local storage. Desse jeito tudo é client side e podemos simplesmente hostar localmente ou de qualquer serviço mas a gente vai user Github Pages. Depois de ter tudo replicado em um jeito que dá pra expandir facilmente com outros tipos de módulos e outros dados para as lições, podemos expandir, mas por enquanto essa é a meta, para replicar mais perto possível esse flow que descrevi com essas ferramentas e features. Pode começar em inglês mesmo sabendo que depois quero editar somente dados das lições para mudar para o tupi. Eu vou traduzir tudo à mão do inglês.
+
+Pensa bem em uma architecture que cumpre tudo isso, que quando o usuário entra já usa cookies e local storage para acessar suas informações sem precisar login, e lembra onde está no mapa de lições (por enquanto só implementa a primeira lição como proof of concept).
+
+Depois, explique detalhadamente, em Portuguese ou inglês ou mistura, tanto faz, para um agente IA de Codex que vai ter acesso a um repo empty para começar de zero e criar a base e skeleton do projeto com os dados iniciais do flow de módulos e perguntas que descrevi que precisamos replicar fielmente. Eu vou dar suas instruções para essa IA agente para fazer tudo isso. 
