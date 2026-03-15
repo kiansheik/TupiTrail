@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 
+import { AnalyticsTracker } from '@/lib/analytics/AnalyticsTracker'
 import { lessonById } from '@/data/course'
 import { ConfidenceScreen } from '@/screens/ConfidenceScreen'
 import { InstallPromptScreen } from '@/screens/InstallPromptScreen'
@@ -43,6 +44,7 @@ const HomeRoute = () => {
 export const AppRouter = () => {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AnalyticsTracker />
       <Routes>
         <Route path="/" element={<HomeRoute />} />
 
