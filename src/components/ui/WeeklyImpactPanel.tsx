@@ -50,8 +50,22 @@ const ReviewIcon = () => (
   </svg>
 )
 
+const weekPoints = [
+  { x: 46, y: 118, label: 'Dom' },
+  { x: 82, y: 95, label: 'Seg' },
+  { x: 120, y: 81, label: 'Ter' },
+  { x: 160, y: 76, label: 'Qua' },
+  { x: 200, y: 81, label: 'Qui' },
+  { x: 238, y: 95, label: 'Sex' },
+  { x: 274, y: 118, label: 'Sab' },
+]
+
 const WeekArcIllustration = ({ compact = false }: { compact?: boolean }) => (
-  <svg viewBox="0 0 320 170" className={cn('w-full', compact ? 'h-[95px]' : 'h-[150px]')} aria-hidden>
+  <svg
+    viewBox="0 0 320 170"
+    className={cn('w-full', compact ? 'h-[86px]' : 'h-[136px]')}
+    aria-hidden
+  >
     <defs>
       <linearGradient id="weekArc" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#94e1c3" />
@@ -62,19 +76,18 @@ const WeekArcIllustration = ({ compact = false }: { compact?: boolean }) => (
     <rect x="4" y="4" width="312" height="162" rx="30" fill="#fffdf6" stroke="#1b2b2635" strokeWidth="3" />
     <path d="M35 130C70 62 250 62 285 130" stroke="url(#weekArc)" strokeWidth="10" fill="none" strokeLinecap="round" />
 
-    {[
-      [46, 118],
-      [82, 95],
-      [120, 81],
-      [160, 76],
-      [200, 81],
-      [238, 95],
-      [274, 118],
-    ].map(([x, y], index) => (
-      <g key={`${x}-${y}`}>
-        <circle cx={x} cy={y} r="10" fill="#ffffff" stroke="#2eb489" strokeWidth="3" />
-        <text x={x} y={y + 24} textAnchor="middle" fontSize="11" fontWeight="800" fill="#1b2b26">
-          D{index + 1}
+    {weekPoints.map((point) => (
+      <g key={`${point.x}-${point.y}`}>
+        <circle cx={point.x} cy={point.y} r="10" fill="#ffffff" stroke="#2eb489" strokeWidth="3" />
+        <text
+          x={point.x}
+          y={point.y + 24}
+          textAnchor="middle"
+          fontSize={compact ? '10' : '11'}
+          fontWeight="800"
+          fill="#1b2b26"
+        >
+          {point.label}
         </text>
       </g>
     ))}
@@ -128,7 +141,9 @@ export const WeeklyImpactPanel = ({ compact = false, className }: WeeklyImpactPa
         className,
       )}
     >
-      <WeekArcIllustration compact={compact} />
+      <div className={cn(compact ? '-mx-1' : '-mx-2')}>
+        <WeekArcIllustration compact={compact} />
+      </div>
 
       <div className={cn('mt-3 grid gap-2', compact && 'mt-2 flex-1 gap-1.5')}>
         {pillars.map((pillar) => (
