@@ -25,8 +25,10 @@ export const ScreenScaffold = ({
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       {typeof progress === 'number' ? <TopProgressBar progress={progress} combo={combo} /> : null}
-      <main className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-5">
-        {title ? <h1 className="font-display text-3xl leading-tight text-ink">{title}</h1> : null}
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-5">
+        {title ? (
+          <h1 className="font-display text-2xl leading-tight text-ink sm:text-3xl">{title}</h1>
+        ) : null}
         {subtitle ? <p className="mt-2 text-base font-semibold text-ink/70">{subtitle}</p> : null}
         <div className={cn('mt-4 flex min-h-0 flex-1 flex-col', contentClassName)}>{children}</div>
       </main>
