@@ -1,7 +1,6 @@
 import type { SelectImageExercise as SelectImageExerciseType } from '@/core/lesson-engine/types'
 
 import { ChoiceCard } from '@/components/ui/ChoiceCard'
-import { NewWordWord } from '@/components/ui/NewWordBadge'
 
 type SelectImageExerciseProps = {
   exercise: SelectImageExerciseType
@@ -16,13 +15,7 @@ export const SelectImageExercise = ({
 }: SelectImageExerciseProps) => {
   return (
     <div className="flex min-h-[360px] flex-col gap-4">
-      {exercise.newWordBadge ? (
-        <div>
-          <NewWordWord word={exercise.prompt} className="text-5xl leading-none" />
-        </div>
-      ) : (
-        <p className="text-xl font-black text-ink">{exercise.prompt}</p>
-      )}
+      {!exercise.newWordBadge ? <p className="text-xl font-black text-ink">{exercise.prompt}</p> : null}
       <div className="grid flex-1 auto-rows-fr grid-cols-2 gap-3">
         {exercise.options.map((option) => (
           <ChoiceCard

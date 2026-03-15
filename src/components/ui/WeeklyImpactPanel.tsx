@@ -60,10 +60,10 @@ const weekPoints = [
   { x: 274, y: 118, label: 'Sab' },
 ]
 
-const WeekArcIllustration = ({ compact = false }: { compact?: boolean }) => (
+const WeekArcIllustration = ({ compact = false, dense = false }: { compact?: boolean; dense?: boolean }) => (
   <svg
     viewBox="0 0 320 170"
-    className={cn('w-full', compact ? 'h-[86px]' : 'h-[136px]')}
+    className={cn('w-full', dense ? 'h-[66px]' : compact ? 'h-[86px]' : 'h-[136px]')}
     aria-hidden
   >
     <defs>
@@ -126,10 +126,11 @@ const pillars: Pillar[] = [
 
 type WeeklyImpactPanelProps = {
   compact?: boolean
+  dense?: boolean
   className?: string
 }
 
-export const WeeklyImpactPanel = ({ compact = false, className }: WeeklyImpactPanelProps) => {
+export const WeeklyImpactPanel = ({ compact = false, dense = false, className }: WeeklyImpactPanelProps) => {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -138,26 +139,42 @@ export const WeeklyImpactPanel = ({ compact = false, className }: WeeklyImpactPa
       className={cn(
         'rounded-[1.6rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#f0fbf7_0%,#fff7e7_100%)] p-4',
         compact && 'flex min-h-0 flex-1 flex-col rounded-[1.3rem] p-2.5',
+        dense && 'rounded-[1.1rem] p-2',
         className,
       )}
     >
       <div className={cn(compact ? '-mx-1' : '-mx-2')}>
-        <WeekArcIllustration compact={compact} />
+        <WeekArcIllustration compact={compact} dense={dense} />
       </div>
 
-      <div className={cn('mt-3 grid gap-2', compact && 'mt-2 flex-1 gap-1.5')}>
+      <div
+        className={cn(
+          'mt-3 grid gap-2',
+          compact && 'mt-2 flex-1 gap-1.5',
+          dense && 'mt-1 grid-cols-3 gap-1',
+        )}
+      >
         {pillars.map((pillar) => (
           <article
             key={pillar.id}
             className={cn(
               'flex items-center gap-3 rounded-2xl border-2 border-ink/10 bg-white/90 p-3',
               compact && 'gap-2 rounded-xl p-2',
+              dense && 'flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center',
             )}
           >
-            <div className={cn('shrink-0', compact && 'scale-90')}>{pillar.icon}</div>
+            <div className={cn('shrink-0', compact && 'scale-90', dense && 'scale-[0.68]')}>{pillar.icon}</div>
             <div>
-              <h3 className={cn('text-base font-black text-ink', compact && 'text-sm')}>{pillar.title}</h3>
-              <p className={cn('text-xs font-bold leading-snug text-ink/70', compact && 'text-[11px]')}>
+              <h3 className={cn('text-base font-black text-ink', compact && 'text-sm', dense && 'text-[10px] leading-tight')}>
+                {pillar.title}
+              </h3>
+              <p
+                className={cn(
+                  'text-xs font-bold leading-snug text-ink/70',
+                  compact && 'text-[11px]',
+                  dense && 'hidden',
+                )}
+              >
                 {pillar.description}
               </p>
             </div>

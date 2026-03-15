@@ -2,20 +2,14 @@ import { motion } from 'framer-motion'
 
 import { CharacterAvatar } from '@/components/ui/CharacterAvatar'
 
-const WaveIcon = () => (
-  <svg viewBox="0 0 48 48" className="h-8 w-8" aria-hidden>
-    <circle cx="24" cy="24" r="22" fill="#fff5d7" stroke="#1b2b2630" strokeWidth="2" />
-    <path
-      d="M16 28c0-3 2-4 3-4 1 0 2 1 2 2v-8c0-1 1-2 2-2s2 1 2 2v7c0-1 1-2 2-2s2 1 2 2v2c0-1 1-2 2-2s2 1 2 2v4c0 6-4 10-10 10s-9-4-9-9v-4z"
-      fill="#2eb489"
-    />
-  </svg>
-)
+type TamaChatAvatarProps = {
+  enterFrom?: 'left' | 'right'
+}
 
-export const TamaChatAvatar = () => {
+export const TamaChatAvatar = ({ enterFrom = 'right' }: TamaChatAvatarProps) => {
   return (
     <motion.div
-      initial={{ x: 120, y: 18, opacity: 0 }}
+      initial={{ x: enterFrom === 'left' ? -120 : 120, y: 18, opacity: 0 }}
       animate={{ x: 0, y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 160, damping: 17 }}
       className="relative h-44 w-44"
@@ -25,27 +19,15 @@ export const TamaChatAvatar = () => {
         transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
         className="relative h-full w-full"
       >
-        <CharacterAvatar id="bird" mood="happy" className="h-44 w-44" />
+        <CharacterAvatar id="bird" mood="happy" blink className="h-44 w-44" />
 
         <motion.div
           aria-hidden
-          className="absolute left-[56px] top-[72px] h-[8px] w-[16px] rounded-full bg-[#2eb489]"
-          animate={{ opacity: [0, 0, 1, 1, 0, 0], scaleY: [0.4, 0.4, 1, 1, 0.4, 0.4] }}
-          transition={{ duration: 2.8, repeat: Infinity, times: [0, 0.38, 0.42, 0.46, 0.5, 1] }}
-        />
-        <motion.div
-          aria-hidden
-          className="absolute left-[102px] top-[72px] h-[8px] w-[16px] rounded-full bg-[#2eb489]"
-          animate={{ opacity: [0, 0, 1, 1, 0, 0], scaleY: [0.4, 0.4, 1, 1, 0.4, 0.4] }}
-          transition={{ duration: 2.8, repeat: Infinity, times: [0, 0.38, 0.42, 0.46, 0.5, 1] }}
-        />
-
-        <motion.div
-          className="absolute -left-5 top-5"
-          animate={{ rotate: [0, 18, -8, 18, 0], y: [0, -2, 1, -2, 0] }}
-          transition={{ duration: 1.7, repeat: Infinity, repeatDelay: 1.2 }}
+          className="absolute right-6 top-2 h-3 w-3 rounded-full bg-[#fff4d0]"
+          animate={{ scale: [0.9, 1.4, 0.9], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <WaveIcon />
+          <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ffd166]" />
         </motion.div>
       </motion.div>
     </motion.div>

@@ -99,7 +99,6 @@ export const NewWordBadge = ({ word }: NewWordBadgeProps) => {
         {iconFromWord(word)}
       </span>
       <span className="text-[11px] font-black uppercase tracking-[0.08em] text-[#6a44d3]">Palavra nova</span>
-      {word ? <NewWordWord word={word} className="text-sm" /> : null}
     </motion.span>
   )
 }

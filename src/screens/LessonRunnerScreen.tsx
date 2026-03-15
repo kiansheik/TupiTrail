@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { CharacterAvatar } from '@/components/ui/CharacterAvatar'
 import { ComboBanner } from '@/components/ui/ComboBanner'
 import { FeedbackPanel } from '@/components/ui/FeedbackPanel'
-import { NewWordBadge } from '@/components/ui/NewWordBadge'
+import { NewWordBadge, NewWordWord } from '@/components/ui/NewWordBadge'
 import { SlowAudioButton } from '@/components/ui/SlowAudioButton'
 import { SpeechBubble } from '@/components/ui/SpeechBubble'
 import { evaluateExercise } from '@/core/lesson-engine/evaluator'
@@ -273,6 +273,18 @@ export const LessonRunnerScreen = () => {
   const currentNewWord = extractNewWord(currentExercise)
   const audioLabel = getAudioLabel(currentExercise)
   const hasPromptBubble = Boolean(currentExercise.promptSegments?.length)
+  const showSelectImageWordRow =
+    currentExercise.type === 'select_image' && Boolean(currentExercise.newWordBadge) && Boolean(currentNewWord)
+  const multipleChoicePromptText =
+    currentExercise.type === 'multiple_choice_translation' ? currentExercise.prompt : null
+  const showMultipleChoiceHeaderRow = Boolean(multipleChoicePromptText)
+  const dialogueHeaderText =
+    currentExercise.type === 'dialogue_choice'
+      ? currentExercise.dialogue.find(
+          (line) => line.speaker.trim().toLowerCase() === 'server' && !line.isBlank && Boolean(line.text),
+        )?.text ?? null
+      : null
+  const showDialogueHeaderRow = Boolean(dialogueHeaderText)
 
   return (
     <ScreenScaffold
@@ -342,9 +354,36 @@ export const LessonRunnerScreen = () => {
               </div>
             </div>
           ) : null}
+
+          {showSelectImageWordRow ? (
+            <div className="flex min-w-0 flex-1 items-center gap-2 pt-9">
+              {currentExercise.audio ? <AudioButton onClick={onReplayAudio} iconOnly /> : null}
+              {currentNewWord ? (
+                <NewWordWord word={currentNewWord} className="truncate text-5xl font-black uppercase leading-none" />
+              ) : null}
+            </div>
+          ) : null}
+
+          {showDialogueHeaderRow ? (
+            <div className="min-w-0 flex-1 pt-1">
+              <p className="mb-1 text-xs font-black uppercase text-ink/45">Server</p>
+              <SpeechBubble className="border-[#b8ccff] bg-[#eef4ff]" tailClassName="border-[#b8ccff] bg-[#eef4ff]">
+                {dialogueHeaderText}
+              </SpeechBubble>
+            </div>
+          ) : null}
+
+          {showMultipleChoiceHeaderRow ? (
+            <div className="min-w-0 flex-1 pt-1">
+              <p className="mb-1 text-xs font-black uppercase text-ink/45">Server</p>
+              <SpeechBubble className="border-[#b8ccff] bg-[#eef4ff]" tailClassName="border-[#b8ccff] bg-[#eef4ff]">
+                <p className="text-xl font-black leading-tight text-ink">{multipleChoicePromptText}</p>
+              </SpeechBubble>
+            </div>
+          ) : null}
         </div>
 
-        {!hasPromptBubble ? (
+        {!hasPromptBubble && !showSelectImageWordRow ? (
           <div className="flex gap-2">
             {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
             {currentExercise.type === 'listening_tap' ? <SlowAudioButton onClick={onSlowAudio} /> : null}
@@ -402,6 +441,7 @@ export const LessonRunnerScreen = () => {
           <DialogueChoiceExercise
             exercise={currentExercise}
             selectedChoice={draft.choice}
+            omitFirstServerLine={showDialogueHeaderRow}
             onSelect={(choice) => {
               if (!currentExerciseId) {
                 return

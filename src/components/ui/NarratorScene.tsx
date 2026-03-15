@@ -11,6 +11,7 @@ type NarratorSceneProps = PropsWithChildren<{
   mood?: 'neutral' | 'happy' | 'encouraging' | 'thinking'
   label?: string
   compact?: boolean
+  dense?: boolean
 }>
 
 export const NarratorScene = ({
@@ -20,6 +21,7 @@ export const NarratorScene = ({
   mood = 'encouraging',
   label = 'Tama diz',
   compact = false,
+  dense = false,
   children,
 }: NarratorSceneProps) => {
   return (
@@ -27,13 +29,15 @@ export const NarratorScene = ({
       className={cn(
         'narrator-stage rounded-[1.8rem] border-2 border-ink/20 px-4 py-5',
         compact && 'rounded-[1.4rem] px-3 py-3',
+        dense && 'rounded-[1.2rem] px-2.5 py-2',
       )}
     >
-      <div className={cn('relative z-10 flex flex-col items-center gap-4', compact && 'gap-2.5')}>
+      <div className={cn('relative z-10 flex flex-col items-center gap-4', compact && 'gap-2.5', dense && 'gap-1.5')}>
         <span
           className={cn(
             'rounded-full border-2 border-ink/20 bg-white/90 px-3 py-1 text-[11px] font-black uppercase tracking-[0.08em] text-ink/70',
             compact && 'px-2.5 py-0.5 text-[10px]',
+            dense && 'px-2 py-0.5 text-[9px]',
           )}
         >
           {label}
@@ -45,8 +49,24 @@ export const NarratorScene = ({
           transition={{ duration: 0.35 }}
           className={cn('narrator-bubble w-full max-w-[320px]', compact && 'max-w-[300px] px-3 py-2.5')}
         >
-          <p className={cn('font-display text-3xl leading-none text-ink', compact && 'text-[1.6rem]')}>{title}</p>
-          <p className={cn('mt-2 text-sm font-extrabold text-ink/75', compact && 'mt-1.5 text-xs')}>{body}</p>
+          <p
+            className={cn(
+              'font-display text-3xl leading-none text-ink',
+              compact && 'text-[1.6rem]',
+              dense && 'text-[1.25rem]',
+            )}
+          >
+            {title}
+          </p>
+          <p
+            className={cn(
+              'mt-2 text-sm font-extrabold text-ink/75',
+              compact && 'mt-1.5 text-xs',
+              dense && 'mt-1 text-[11px]',
+            )}
+          >
+            {body}
+          </p>
           <div className="narrator-tail" aria-hidden />
         </motion.div>
 
@@ -55,7 +75,11 @@ export const NarratorScene = ({
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
           className="drop-shadow-[0_12px_10px_rgba(17,24,39,0.22)]"
         >
-          <CharacterAvatar id={characterId} mood={mood} className={compact ? 'h-24 w-24' : 'h-32 w-32'} />
+          <CharacterAvatar
+            id={characterId}
+            mood={mood}
+            className={dense ? 'h-16 w-16' : compact ? 'h-24 w-24' : 'h-32 w-32'}
+          />
         </motion.div>
 
         {children ? <div className="w-full">{children}</div> : null}

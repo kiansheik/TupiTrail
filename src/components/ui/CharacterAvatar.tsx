@@ -1,9 +1,12 @@
+import { motion, type Transition } from 'framer-motion'
+
 import { cn } from '@/lib/utils/classNames'
 
 type CharacterAvatarProps = {
   id: 'bird' | 'woman' | 'man' | 'nonbinary' | 'bear'
   mood?: 'neutral' | 'happy' | 'encouraging' | 'thinking'
   className?: string
+  blink?: boolean
 }
 
 const Mouth = ({ mood }: { mood?: CharacterAvatarProps['mood'] }) => {
@@ -16,15 +19,65 @@ const Mouth = ({ mood }: { mood?: CharacterAvatarProps['mood'] }) => {
   return <path d="M42 67c4 8 12 8 16 0" fill="none" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
 }
 
-export const CharacterAvatar = ({ id, mood = 'neutral', className }: CharacterAvatarProps) => {
+export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false }: CharacterAvatarProps) => {
   if (id === 'bird') {
+    const blinkTransition: Transition = {
+      duration: 2.8,
+      repeat: Infinity,
+      times: [0, 0.38, 0.42, 0.46, 1],
+      ease: 'easeInOut',
+    }
+
     return (
       <svg viewBox="0 0 100 100" className={cn('h-24 w-24', className)} aria-label="Bird mascot">
         <circle cx="50" cy="50" r="42" fill="#2eb489" />
-        <circle cx="36" cy="44" r="6" fill="#fff" />
-        <circle cx="64" cy="44" r="6" fill="#fff" />
-        <circle cx="36" cy="44" r="2.5" fill="#1b2b26" />
-        <circle cx="64" cy="44" r="2.5" fill="#1b2b26" />
+        {blink ? (
+          <>
+            <motion.ellipse
+              cx="36"
+              cy="44"
+              rx="6"
+              ry="6"
+              fill="#fff"
+              animate={{ ry: [6, 6, 0.9, 6, 6] }}
+              transition={blinkTransition}
+            />
+            <motion.ellipse
+              cx="64"
+              cy="44"
+              rx="6"
+              ry="6"
+              fill="#fff"
+              animate={{ ry: [6, 6, 0.9, 6, 6] }}
+              transition={blinkTransition}
+            />
+            <motion.ellipse
+              cx="36"
+              cy="44"
+              rx="2.5"
+              ry="2.5"
+              fill="#1b2b26"
+              animate={{ ry: [2.5, 2.5, 0.6, 2.5, 2.5] }}
+              transition={blinkTransition}
+            />
+            <motion.ellipse
+              cx="64"
+              cy="44"
+              rx="2.5"
+              ry="2.5"
+              fill="#1b2b26"
+              animate={{ ry: [2.5, 2.5, 0.6, 2.5, 2.5] }}
+              transition={blinkTransition}
+            />
+          </>
+        ) : (
+          <>
+            <circle cx="36" cy="44" r="6" fill="#fff" />
+            <circle cx="64" cy="44" r="6" fill="#fff" />
+            <circle cx="36" cy="44" r="2.5" fill="#1b2b26" />
+            <circle cx="64" cy="44" r="2.5" fill="#1b2b26" />
+          </>
+        )}
         <polygon points="50,52 40,60 60,60" fill="#ffb703" />
         <Mouth mood={mood} />
         <circle cx="73" cy="30" r="7" fill="#ffd166" />
