@@ -63,7 +63,9 @@ export const NotificationPromptScreen = () => {
     const hasNotificationApi = typeof window.Notification?.requestPermission === 'function'
     if (!hasNotificationApi) {
       setNotificationPreference(true, false)
-      setStatus('Seu navegador não suporta notificações nesta demo. Continuando sem lembretes.')
+      setStatus(
+        'Seu navegador não suporta notificações. Esta é a razão pela qual pode não funcionar no seu dispositivo móvel.',
+      )
       scheduleAdvance()
       setIsRequesting(false)
       return
@@ -71,7 +73,9 @@ export const NotificationPromptScreen = () => {
 
     if (!window.isSecureContext) {
       setNotificationPreference(true, false)
-      setStatus('Não foi possível ativar notificações neste contexto. Continuando sem lembretes.')
+      setStatus(
+        'As notificações requerem um contexto seguro (HTTPS), o que pode ser o motivo de não funcionar no seu telemóvel.',
+      )
       scheduleAdvance()
       setIsRequesting(false)
       return
