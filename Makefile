@@ -1,4 +1,4 @@
-.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map
+.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map check-required-audio check-required-audio-strict
 
 LEXICON_TARGET_LANG ?= en
 
@@ -12,6 +12,8 @@ help:
 	@echo "  make test"
 	@echo "  make dev"
 	@echo "  make generate-englishtotupi-map  # auto-generate en->tupi map keys from lesson data"
+	@echo "  make check-required-audio  # list required audio files and missing ones"
+	@echo "  make check-required-audio-strict  # fail if any required audio file is missing"
 
 lint:
 	npm run lint
@@ -27,6 +29,12 @@ dev:
 
 generate-englishtotupi-map:
 	node scripts/generate-en-to-tupi-map.mjs
+
+check-required-audio:
+	node scripts/check-required-audio.mjs
+
+check-required-audio-strict:
+	node scripts/check-required-audio.mjs --strict
 
 local-deploy:
 	npm run lint

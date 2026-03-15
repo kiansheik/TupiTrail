@@ -125,24 +125,41 @@ Inventário lexical único extraído da lição:
 
 ## Áudio
 
-- TTS: `src/lib/audio/speech.ts`
+- Playback: `src/lib/audio/speech.ts`
 - SFX originais: `src/lib/audio/sfx.ts`
 
-### Trocar TTS por áudio gravado
+### Áudio por arquivo no repositório (recomendado para Tupi)
 
 No dado do exercício, troque:
 
 ```ts
-audio: { mode: 'tts', text: 'tea', lang: 'en-US' }
+audio: repoAudio('unit1/lesson1/ex9-tea.mp3', { id: 'unit1-lesson1-ex9-audio' })
 ```
 
 por:
 
 ```ts
-audio: { mode: 'file', src: '/audio/tea.mp3', slowSrc: '/audio/tea-slow.mp3' }
+audio: repoAudio('unit1/lesson1/ex9-tea.mp3', {
+  id: 'unit1-lesson1-ex9-audio',
+  slowSrc: 'unit1/lesson1/ex9-tea-slow.mp3',
+  required: true,
+})
 ```
 
 A UI e a engine permanecem iguais.
+
+Recomendação prática:
+
+- Reuse o mesmo arquivo para a mesma palavra/frase entre exercícios (evita duplicar `ex#` para o mesmo áudio).
+- `slowAudio` pode ser opcional (`required: false`); se não existir, o app toca o áudio normal em velocidade reduzida.
+
+Arquivos em `public/audio/**` são copiados automaticamente para `dist/audio/**`.
+
+Para listar quais áudios obrigatórios ainda faltam:
+
+```bash
+make check-required-audio
+```
 
 ## Persistência
 

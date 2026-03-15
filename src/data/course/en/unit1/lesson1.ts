@@ -1,4 +1,5 @@
 import type { LessonTemplateData } from '@/core/lesson-engine/template-types'
+import { repoAudio } from '@/data/audio/repoAudio'
 import { enText, ptBrText } from '@/data/lexicon'
 
 const en = enText
@@ -25,7 +26,7 @@ export const lesson1Template: LessonTemplateData = {
         { id: 'leite', label: en('milk'), imageEmoji: '🥛' },
       ],
       correctOptionId: 'café',
-      audio: { mode: 'tts', text: en('coffee'), lang: 'en-US' },
+      audio: repoAudio('unit1/shared/coffee.mp3', { id: 'vocab-coffee' }),
       meaning: 'café',
       xp: 8,
     },
@@ -43,7 +44,7 @@ export const lesson1Template: LessonTemplateData = {
         { id: 'água', label: en('water'), imageEmoji: '💧' },
       ],
       correctOptionId: 'chá',
-      audio: { mode: 'tts', text: en('tea'), lang: 'en-US' },
+      audio: repoAudio('unit1/shared/tea.mp3', { id: 'vocab-tea' }),
       meaning: 'chá',
       xp: 8,
     },
@@ -53,17 +54,19 @@ export const lesson1Template: LessonTemplateData = {
       instruction: 'Traduza esta frase',
       character: { id: 'man', mood: 'thinking' },
       sourceText: [{ text: en('I want water.') }],
-      tokenBank: [pt("água"), pt("quero"), pt("favor"), pt("obrigado"), pt("você.")],
-      correctSequence: [pt("quero"), pt("água")],
+      tokenBank: [pt("água"), pt("quero"), pt("beber"), pt("favor"), pt("obrigado"), pt("você.")],
+      correctSequence: [pt("quero"), pt("beber"), pt("água")],
       explanation: {
         correct: 'Perfeito: pedido simples e educado.',
         incorrect: 'A frase precisa ter bebida + polite word.',
         grammarNotes: [
-          { label: 'Water', text: 'substancia/bebida' },
-          { label: 'please', text: 'marca de cortesia' },
+          { label: 'a-', text: 'eu; conjugação da primeira pessoa' },
+          { label: "'u", text: 'ingerir; beber; comer;' },
+          { label: "-seî", text: 'querer; (ingerir, diferente de "potar" que é querer em geral)' },
+          { label: "'y", text: 'água; rio' },
         ],
       },
-      meaning: 'Quero água.',
+      meaning: 'quero beber água.',
       xp: 10,
     },
     {
@@ -96,7 +99,7 @@ export const lesson1Template: LessonTemplateData = {
         { text: en(' tea?') },
       ],
       sourceText: [{ text: en('Coffee or tea?') }],
-      tokenBank: [pt('café'), pt('ou'), pt('chá'), pt('por favor')],
+      tokenBank: [pt('café'), pt('ou'), pt('chá'), pt('por'), pt('favor')],
       correctSequence: [pt('café'), pt('ou'), pt('chá')],
       explanation: {
         incorrect: "Aqui, 'ou' conecta duas opcoes.",
@@ -108,7 +111,7 @@ export const lesson1Template: LessonTemplateData = {
         ],
       },
       meaning: 'café ou cha?',
-      audio: { mode: 'tts', text: en('Coffee or tea?'), lang: 'en-US' },
+      audio: repoAudio('unit1/shared/coffee-or-tea.mp3', { id: 'phrase-coffee-or-tea' }),
       xp: 10,
     },
     {
@@ -128,9 +131,9 @@ export const lesson1Template: LessonTemplateData = {
       instruction: 'Traduza esta frase',
       character: { id: 'woman', mood: 'neutral' },
       sourceText: [{ text: en('I want coffee.') }],
-      tokenBank: [pt('café'), pt('quero'), pt('favor'), pt('chá'), pt('ou')],
-      correctSequence: [pt('quero'), pt('café')],
-      meaning: 'Quero café.',
+      tokenBank: [pt('café'), pt('quero'), pt('beber'), pt('favor'), pt('chá'), pt('ou')],
+      correctSequence: [pt('quero'), pt('beber'), pt('café')],
+      meaning: 'quero beber café.',
       xp: 10,
     },
     {
@@ -152,8 +155,8 @@ export const lesson1Template: LessonTemplateData = {
       type: 'listening_tap',
       instruction: 'Toque no que escutar',
       character: { id: 'nonbinary', mood: 'thinking' },
-      audio: { mode: 'tts', text: en('tea'), lang: 'en-US' },
-      slowAudio: { mode: 'tts', text: en('tea'), lang: 'en-US', rate: 0.65 },
+      audio: repoAudio('unit1/shared/tea.mp3', { id: 'vocab-tea' }),
+      slowAudio: repoAudio('unit1/shared/tea-slow.mp3', { id: 'vocab-tea-slow', required: false }),
       tokenBank: [en('tea'), en('coffee'), en('water')],
       correctSequence: [en('tea')],
       meaning: 'chá',
@@ -170,7 +173,7 @@ export const lesson1Template: LessonTemplateData = {
       ],
       choices: [en('I want coffee.'), en('I want water.'), en('Thank you.')],
       correctChoice: en('I want coffee.'),
-      meaning: 'Quero café.',
+      meaning: 'quero beber café.',
       xp: 10,
     },
     {
@@ -178,8 +181,8 @@ export const lesson1Template: LessonTemplateData = {
       type: 'listening_tap',
       instruction: 'Toque no que escutar',
       character: { id: 'bird', mood: 'encouraging' },
-      audio: { mode: 'tts', text: en('coffee'), lang: 'en-US' },
-      slowAudio: { mode: 'tts', text: en('coffee'), lang: 'en-US', rate: 0.65 },
+      audio: repoAudio('unit1/shared/coffee.mp3', { id: 'vocab-coffee' }),
+      slowAudio: repoAudio('unit1/shared/coffee-slow.mp3', { id: 'vocab-coffee-slow', required: false }),
       tokenBank: [en('sugar'), en('coffee'), en('milk')],
       correctSequence: [en('coffee')],
       meaning: 'café',
@@ -207,7 +210,7 @@ export const lesson1Template: LessonTemplateData = {
       ],
       choices: [en('I want tea.'), en('I want water.'), en('Welcome!')],
       correctChoice: en('I want tea.'),
-      meaning: 'Quero chá.',
+      meaning: 'quero beber chá.',
       xp: 10,
     },
     {

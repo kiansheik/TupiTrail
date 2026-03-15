@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { AudioButton } from '@/components/ui/AudioButton'
 import { CharacterAvatar } from '@/components/ui/CharacterAvatar'
 import { NewWordBadge, NewWordWord } from '@/components/ui/NewWordBadge'
@@ -9,12 +11,15 @@ type ExerciseHeaderProps = {
   exercise: Exercise
   currentNewWord?: string
   onReplayAudio: () => void
+  rightAccessory?: ReactNode
 }
 
-export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio }: ExerciseHeaderProps) => {
+export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio, rightAccessory }: ExerciseHeaderProps) => {
   const meta = getExerciseHeaderMeta(exercise, currentNewWord)
   const showDialogueHeaderRow = Boolean(meta.dialogueHeaderText)
   const showMultipleChoiceHeaderRow = Boolean(meta.multipleChoicePromptText)
+  const canShowAccessory =
+    !meta.hasPromptBubble && !meta.showSelectImageWordRow && !showDialogueHeaderRow && !showMultipleChoiceHeaderRow
 
   return (
     <div className={`flex items-start ${meta.isTokenTranslatePrompt ? 'gap-1' : 'gap-3'}`}>
@@ -77,6 +82,8 @@ export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio }: Exer
           </SpeechBubble>
         </div>
       ) : null}
+
+      {canShowAccessory && rightAccessory ? <div className="min-w-0 flex-1 pt-7">{rightAccessory}</div> : null}
     </div>
   )
 }

@@ -12,10 +12,11 @@ export const SlowAudioButton = ({ onClick, className }: SlowAudioButtonProps) =>
       type="button"
       variant="secondary"
       fullWidth={false}
-      className={cn('px-4 py-2 text-lg', className)}
+      className={cn('inline-flex items-center justify-center px-4 py-2 text-lg leading-none', className)}
       onClick={onClick}
+      aria-label="Escutar mais devagar"
     >
-      <span className="inline-block -scale-x-100 leading-none">🐢</span>
+      <span className="inline-flex h-full w-full items-center justify-center leading-none -scale-x-100">🐢</span>
     </Button>
   )
 }

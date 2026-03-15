@@ -7,7 +7,13 @@ export type RichTextSegment = {
 
 export type AudioSpec =
   | { mode: 'tts'; text: string; lang: string; rate?: number }
-  | { mode: 'file'; src: string; slowSrc?: string }
+  | {
+      mode: 'file'
+      src: string
+      slowSrc?: string
+      required?: boolean
+      id?: string
+    }
 
 export type CharacterMood = 'neutral' | 'happy' | 'encouraging' | 'thinking'
 

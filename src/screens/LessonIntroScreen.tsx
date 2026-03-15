@@ -31,7 +31,7 @@ export const LessonIntroScreen = () => {
       bottomSlot={<Button onClick={onContinue}>Continuar</Button>}
     >
       <div className="flex h-full min-h-0">
-        <div className="relative mt-auto min-h-[240px] flex-1 overflow-hidden rounded-[1.6rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#ecfbf4_0%,#fff3dd_100%)]">
+        <div className="relative min-h-[240px] flex-1 overflow-hidden rounded-[1.6rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#ecfbf4_0%,#fff3dd_100%)]">
           <div className="absolute inset-x-0 bottom-0 h-20 bg-[radial-gradient(ellipse_at_center,_rgba(46,180,137,0.2),_transparent_70%)]" />
 
           <div className="absolute left-2 top-2 origin-top-left scale-[0.56]">

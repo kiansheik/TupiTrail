@@ -34,22 +34,20 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
         {blink ? (
           <>
             <motion.g
-              transform="translate(36 44)"
               animate={{ scaleY: [1, 1, 0.14, 1, 1] }}
               transition={blinkTransition}
               style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
             >
-              <ellipse cx="0" cy="0" rx="6" ry="6" fill="#fff" />
-              <ellipse cx="0" cy="0" rx="2.5" ry="2.5" fill="#1b2b26" />
+              <ellipse cx="36" cy="44" rx="6" ry="6" fill="#fff" />
+              <ellipse cx="36" cy="44" rx="2.5" ry="2.5" fill="#1b2b26" />
             </motion.g>
             <motion.g
-              transform="translate(64 44)"
               animate={{ scaleY: [1, 1, 0.14, 1, 1] }}
               transition={blinkTransition}
               style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
             >
-              <ellipse cx="0" cy="0" rx="6" ry="6" fill="#fff" />
-              <ellipse cx="0" cy="0" rx="2.5" ry="2.5" fill="#1b2b26" />
+              <ellipse cx="64" cy="44" rx="6" ry="6" fill="#fff" />
+              <ellipse cx="64" cy="44" rx="2.5" ry="2.5" fill="#1b2b26" />
             </motion.g>
           </>
         ) : (

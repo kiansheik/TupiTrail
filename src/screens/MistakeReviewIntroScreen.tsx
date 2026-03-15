@@ -1,20 +1,44 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { ScreenScaffold } from '@/components/layout/ScreenScaffold'
 import { Button } from '@/components/ui/Button'
 import { TamaChatAvatar } from '@/components/ui/TamaChatAvatar'
+import { lessonById } from '@/data/course'
 import { uiStrings } from '@/data/ui'
+import { useAppStore } from '@/store/useAppStore'
 import { useLessonSessionStore } from '@/store/useLessonSessionStore'
 
 export const MistakeReviewIntroScreen = () => {
   const navigate = useNavigate()
   const params = useParams<{ lessonId: string }>()
   const lessonId = params.lessonId ?? 'unit1-lesson1'
+  const lesson = useLessonSessionStore((state) => state.lesson)
+  const restoreLesson = useLessonSessionStore((state) => state.restoreLesson)
   const beginReview = useLessonSessionStore((state) => state.beginReview)
+  const lessonResume = useAppStore((state) => state.lessonResume)
+  const saveLessonResume = useAppStore((state) => state.saveLessonResume)
+
+  useEffect(() => {
+    if (lesson || !lessonResume || lessonResume.lessonId !== lessonId) {
+      return
+    }
+    const lessonFromData = lessonById.get(lessonResume.lessonId)
+    if (!lessonFromData) {
+      return
+    }
+    restoreLesson(lessonFromData, lessonResume)
+  }, [lesson, lessonResume, lessonId, restoreLesson])
 
   const onContinue = () => {
     beginReview()
+    if (lessonResume?.lessonId === lessonId) {
+      saveLessonResume({
+        ...lessonResume,
+        needsMistakeIntro: false,
+      })
+    }
     navigate(`/lesson/${lessonId}/run`)
   }
 

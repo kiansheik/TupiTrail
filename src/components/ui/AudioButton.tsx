@@ -14,11 +14,20 @@ export const AudioButton = ({ onClick, label = '🔊 Escutar', iconOnly = false,
       type="button"
       variant="secondary"
       fullWidth={false}
-      className={cn(iconOnly ? 'h-11 w-11 rounded-full px-0 py-0 text-lg' : 'px-4 py-2 text-sm', className)}
+      className={cn(
+        iconOnly
+          ? 'inline-flex h-11 w-11 items-center justify-center rounded-full px-0 py-0 text-lg leading-none'
+          : 'inline-flex items-center justify-center px-4 py-2 text-sm',
+        className,
+      )}
       onClick={onClick}
       aria-label={iconOnly ? 'Escutar áudio' : undefined}
     >
-      {iconOnly ? '🔊' : label}
+      {iconOnly ? (
+        <span className="inline-flex h-full w-full items-center justify-center leading-none">🔊</span>
+      ) : (
+        label
+      )}
     </Button>
   )
 }

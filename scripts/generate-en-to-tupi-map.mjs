@@ -59,17 +59,19 @@ const getStringLiteral = (node) => {
 
 const readExistingMap = (filePath) => {
   if (!fs.existsSync(filePath)) {
-    return new Map()
+    return { entries: new Map(), source: null, objectNode: null }
   }
 
   const source = fs.readFileSync(filePath, 'utf8')
   const sf = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
   const out = new Map()
+  let objectNode = null
 
   const visit = (node) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === 'enToTupiMap') {
       const init = node.initializer
       if (init && ts.isObjectLiteralExpression(init)) {
+        objectNode = init
         for (const prop of init.properties) {
           if (!ts.isPropertyAssignment(prop)) {
             continue
@@ -98,7 +100,7 @@ const readExistingMap = (filePath) => {
   }
 
   visit(sf)
-  return out
+  return { entries: out, source, objectNode }
 }
 
 const collectEnglishEntries = (rootDir) => {
@@ -153,7 +155,7 @@ const collectEnglishEntries = (rootDir) => {
   return entries
 }
 
-const generateMapSource = (lessonEntries, existingMap) => {
+const generateInitialMapSource = (lessonEntries, existingMap) => {
   const lessonKeys = [...lessonEntries.keys()].sort((a, b) => a.localeCompare(b))
   const extraKeys = [...existingMap.keys()].filter((key) => !lessonEntries.has(key)).sort((a, b) => a.localeCompare(b))
 
@@ -186,6 +188,38 @@ const generateMapSource = (lessonEntries, existingMap) => {
   return lines.join('\n')
 }
 
+const appendMissingEntries = (source, objectNode, missingEntries) => {
+  if (!objectNode) {
+    return null
+  }
+
+  const closeBracePos = objectNode.getEnd() - 1
+  const before = source.slice(0, closeBracePos)
+  const after = source.slice(closeBracePos)
+  const hasExistingProps = objectNode.properties.length > 0
+
+  let beforeNormalized = before
+  if (hasExistingProps) {
+    const trimmed = beforeNormalized.trimEnd()
+    if (!trimmed.endsWith(',')) {
+      const trailingWs = beforeNormalized.slice(trimmed.length)
+      beforeNormalized = `${trimmed},${trailingWs}`
+    }
+  }
+
+  const insertionLines = [
+    '',
+    '  // Auto-added by `make generate-englishtotupi-map`:',
+    ...missingEntries.map(
+      ({ key, sourceValue }) => `  ${quote(key)}: '', // ${inlineComment(sourceValue)}`,
+    ),
+  ]
+
+  const needsNewline = !beforeNormalized.endsWith('\n')
+  const insertion = `${needsNewline ? '\n' : ''}${insertionLines.join('\n')}\n`
+  return `${beforeNormalized}${insertion}${after}`
+}
+
 const ensureDir = (filePath) => {
   const dir = path.dirname(filePath)
   if (!fs.existsSync(dir)) {
@@ -199,19 +233,34 @@ const run = () => {
   }
 
   const lessonEntries = collectEnglishEntries(lessonsRoot)
-  const existingMap = readExistingMap(mapFile)
-  const next = generateMapSource(lessonEntries, existingMap)
+  const existingMapData = readExistingMap(mapFile)
+  const existingMap = existingMapData.entries
+  const missingKeys = [...lessonEntries.keys()].filter((key) => !existingMap.has(key)).sort((a, b) => a.localeCompare(b))
+  const missingEntries = missingKeys.map((key) => ({
+    key,
+    sourceValue: lessonEntries.get(key) ?? '',
+  }))
 
   ensureDir(mapFile)
 
-  const previous = fs.existsSync(mapFile) ? fs.readFileSync(mapFile, 'utf8') : ''
-  if (previous === next) {
+  if (missingEntries.length === 0) {
     console.log('enToTupi map already up to date.')
     return
   }
 
+  let next = null
+  if (existingMapData.source && existingMapData.objectNode) {
+    next = appendMissingEntries(existingMapData.source, existingMapData.objectNode, missingEntries)
+  }
+
+  if (!next) {
+    next = generateInitialMapSource(lessonEntries, existingMap)
+  }
+
   fs.writeFileSync(mapFile, next, 'utf8')
-  console.log(`Generated ${path.relative(repoRoot, mapFile)} with ${lessonEntries.size} lesson keys.`)
+  console.log(
+    `Updated ${path.relative(repoRoot, mapFile)}: added ${missingEntries.length} new key(s), kept existing entries intact.`,
+  )
 }
 
 run()

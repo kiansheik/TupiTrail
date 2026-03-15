@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 
+import { lessonById } from '@/data/course'
 import { ConfidenceScreen } from '@/screens/ConfidenceScreen'
 import { InstallPromptScreen } from '@/screens/InstallPromptScreen'
 import { IntroContinueScreen } from '@/screens/IntroContinueScreen'
@@ -17,7 +18,21 @@ import { WelcomeScreen } from '@/screens/WelcomeScreen'
 import { useAppStore } from '@/store/useAppStore'
 
 const HomeRoute = () => {
+  const lessonResume = useAppStore((state) => state.lessonResume)
   const onboardingCompleted = useAppStore((state) => state.onboardingCompleted)
+
+  if (lessonResume?.lessonId && lessonById.has(lessonResume.lessonId)) {
+    if (lessonResume.needsMistakeIntro) {
+      return <Navigate to={`/lesson/${lessonResume.lessonId}/mistakes`} replace />
+    }
+
+    if (lessonResume.queueState?.phase === 'complete') {
+      return <Navigate to={`/lesson/${lessonResume.lessonId}/complete`} replace />
+    }
+
+    return <Navigate to={`/lesson/${lessonResume.lessonId}/run`} replace />
+  }
+
   if (onboardingCompleted) {
     return <Navigate to="/map" replace />
   }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { ScreenScaffold } from '@/components/layout/ScreenScaffold'
@@ -32,27 +32,89 @@ export const NotificationPromptScreen = () => {
   const navigate = useNavigate()
   const setNotificationPreference = useAppStore((state) => state.setNotificationPreference)
   const [status, setStatus] = useState<string>('Lembretes ajudam a manter a ofensiva ativa.')
+  const [isRequesting, setIsRequesting] = useState(false)
+  const advanceTimeoutRef = useRef<number | null>(null)
+
+  const scheduleAdvance = (delayMs = 700) => {
+    if (advanceTimeoutRef.current !== null) {
+      window.clearTimeout(advanceTimeoutRef.current)
+    }
+    advanceTimeoutRef.current = window.setTimeout(() => {
+      navigate('/onboarding/benefits')
+      advanceTimeoutRef.current = null
+    }, delayMs)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (advanceTimeoutRef.current !== null) {
+        window.clearTimeout(advanceTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const requestPermission = async () => {
-    if (!('Notification' in window)) {
-      setNotificationPreference(true, false)
-      setStatus('Seu navegador não suporta notificações nesta demo.')
+    if (isRequesting) {
       return
     }
 
-    const permission = await Notification.requestPermission()
-    const granted = permission === 'granted'
-    setNotificationPreference(true, granted)
-    setStatus(granted ? 'Notificações ativadas. Avançando...' : 'Sem problema, você pode ativar depois.')
+    setIsRequesting(true)
 
-    if (granted) {
-      window.setTimeout(() => {
-        navigate('/onboarding/benefits')
-      }, 500)
+    const hasNotificationApi = typeof window.Notification?.requestPermission === 'function'
+    if (!hasNotificationApi) {
+      setNotificationPreference(true, false)
+      setStatus('Seu navegador não suporta notificações nesta demo. Continuando sem lembretes.')
+      scheduleAdvance()
+      setIsRequesting(false)
+      return
+    }
+
+    if (!window.isSecureContext) {
+      setNotificationPreference(true, false)
+      setStatus('Não foi possível ativar notificações neste contexto. Continuando sem lembretes.')
+      scheduleAdvance()
+      setIsRequesting(false)
+      return
+    }
+
+    if (window.Notification.permission === 'granted') {
+      setNotificationPreference(true, true)
+      setStatus('Notificações já estavam ativadas. Avançando...')
+      scheduleAdvance(350)
+      setIsRequesting(false)
+      return
+    }
+
+    if (window.Notification.permission === 'denied') {
+      setNotificationPreference(true, false)
+      setStatus('Notificações bloqueadas no navegador. Continuando sem lembretes.')
+      scheduleAdvance()
+      setIsRequesting(false)
+      return
+    }
+
+    try {
+      const permission = await window.Notification.requestPermission()
+      const granted = permission === 'granted'
+      setNotificationPreference(true, granted)
+      if (granted) {
+        setStatus('Notificações ativadas. Avançando...')
+        scheduleAdvance(500)
+      } else {
+        setStatus('Não foi possível ativar agora. Continuando sem lembretes.')
+        scheduleAdvance()
+      }
+    } catch {
+      setNotificationPreference(true, false)
+      setStatus('Não foi possível ativar notificações neste dispositivo. Continuando sem lembretes.')
+      scheduleAdvance()
+    } finally {
+      setIsRequesting(false)
     }
   }
 
   const continueFlow = () => {
+    setNotificationPreference(true, false)
     navigate('/onboarding/benefits')
   }
 
@@ -63,7 +125,9 @@ export const NotificationPromptScreen = () => {
       contentClassName="h-full"
       bottomSlot={
         <div className="space-y-2">
-          <Button onClick={requestPermission}>{uiStrings.notificationsAllow}</Button>
+          <Button onClick={requestPermission} disabled={isRequesting}>
+            {uiStrings.notificationsAllow}
+          </Button>
           <Button variant="secondary" onClick={continueFlow}>
             {uiStrings.notificationsLater}
           </Button>

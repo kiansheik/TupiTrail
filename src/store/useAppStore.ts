@@ -48,11 +48,36 @@ export type AppProgress = {
 
 export type LessonResumeState = {
   lessonId: string
-  queue: string[]
-  currentIndex: number
-  answers: Record<string, unknown>
-  firstPassMistakes: string[]
   startedAt: string
+  queueState?: {
+    phase: 'main' | 'review' | 'complete'
+    mainQueue: string[]
+    mainIndex: number
+    reviewQueue: string[]
+    firstPassMistakes: string[]
+    mistakeSet: Record<string, boolean>
+  }
+  answers?: Record<string, unknown>
+  attempts?: Record<string, number>
+  correctByExercise?: Record<string, boolean>
+  firstPassCorrectByExercise?: Record<string, boolean>
+  combo?: {
+    current: number
+    best: number
+  }
+  needsMistakeIntro?: boolean
+  draftByExercise?: Record<
+    string,
+    {
+      selectImage: string | null
+      choice: string | null
+      tokens: string[]
+    }
+  >
+  // Legacy fallback fields (v1 snapshots):
+  queue?: string[]
+  currentIndex?: number
+  firstPassMistakes?: string[]
 }
 
 type AppState = {

@@ -2,6 +2,31 @@ import type { AudioSpec } from '@/core/lesson-engine/types'
 
 let currentAudio: HTMLAudioElement | null = null
 
+type PlayAudioOptions = {
+  playbackRate?: number
+  fallbackAudioSpec?: AudioSpec
+  fallbackPlaybackRate?: number
+}
+
+const swapCommonAudioExtension = (src: string): string | null => {
+  if (/\.mp3($|\?)/i.test(src)) {
+    return src.replace(/\.mp3($|\?)/i, '.ogg$1')
+  }
+  if (/\.ogg($|\?)/i.test(src)) {
+    return src.replace(/\.ogg($|\?)/i, '.mp3$1')
+  }
+  return null
+}
+
+export const getAudioSourceCandidates = (src: string): string[] => {
+  const candidates = [src]
+  const swapped = swapCommonAudioExtension(src)
+  if (swapped && swapped !== src) {
+    candidates.push(swapped)
+  }
+  return candidates
+}
+
 export const stopSpeech = (): void => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel()
@@ -13,7 +38,7 @@ export const stopSpeech = (): void => {
   }
 }
 
-export const playAudioSpec = (audioSpec: AudioSpec | undefined): void => {
+export const playAudioSpec = (audioSpec: AudioSpec | undefined, options?: PlayAudioOptions): void => {
   if (!audioSpec) {
     return
   }
@@ -21,7 +46,29 @@ export const playAudioSpec = (audioSpec: AudioSpec | undefined): void => {
   stopSpeech()
 
   if (audioSpec.mode === 'file') {
-    const element = new Audio(audioSpec.src)
+    const sources = getAudioSourceCandidates(audioSpec.src)
+    let sourceIndex = 0
+    const element = new Audio(sources[sourceIndex])
+    if (options?.playbackRate && Number.isFinite(options.playbackRate)) {
+      element.playbackRate = Math.max(0.5, Math.min(1.2, options.playbackRate))
+    }
+    const onError = () => {
+      if (sourceIndex + 1 >= sources.length) {
+        if (options?.fallbackAudioSpec) {
+          playAudioSpec(options.fallbackAudioSpec, {
+            playbackRate: options.fallbackPlaybackRate,
+          })
+        }
+        return
+      }
+      sourceIndex += 1
+      element.src = sources[sourceIndex]
+      element.load()
+      element.play().catch(() => {
+        // ignore browser autoplay constraints in prototype mode
+      })
+    }
+    element.addEventListener('error', onError)
     element.play().catch(() => {
       // ignore browser autoplay constraints in prototype mode
     })

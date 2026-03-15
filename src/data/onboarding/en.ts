@@ -16,7 +16,7 @@ export const introSteps: IntroStep[] = [
   },
   {
     id: 'quick-questions',
-    title: 'Só 8 perguntas rápidas',
+    title: 'Só umas perguntas rápidas',
     description: 'Isso ajuda a personalizar seu começo e manter o hábito diário.',
     mascotMood: 'encouraging',
     nextPath: '/onboarding/confidence',

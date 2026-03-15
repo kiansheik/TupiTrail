@@ -19,6 +19,15 @@ type FeedbackState = {
   result: EvaluationResult
 }
 
+type DraftByExerciseSnapshot = Record<
+  string,
+  {
+    selectImage: string | null
+    choice: string | null
+    tokens: string[]
+  }
+>
+
 type LessonSessionState = {
   lesson: LessonData | null
   queueState: LessonQueueState | null
@@ -34,13 +43,14 @@ type LessonSessionState = {
   feedback: FeedbackState | null
   needsMistakeIntro: boolean
   startLesson: (lesson: LessonData) => void
+  restoreLesson: (lesson: LessonData, resume: LessonResumeState) => void
   submitAnswer: (answer: UserAnswer) => EvaluationResult | null
   continueAfterFeedback: () => void
   beginReview: () => void
   getCurrentExercise: () => Exercise | null
   clearFeedback: () => void
   buildLessonResult: () => LessonResult | null
-  toResumeState: () => LessonResumeState | null
+  toResumeState: (draftByExercise?: DraftByExerciseSnapshot) => LessonResumeState | null
   reset: () => void
 }
 
@@ -56,6 +66,67 @@ const buildQueueResume = (queueState: LessonQueueState): { queue: string[]; curr
     queue: [...queueState.reviewQueue],
     currentIndex: 0,
   }
+}
+
+const normalizeQueueState = (queueState: LessonQueueState, lesson: LessonData): LessonQueueState => {
+  const validIds = new Set(lesson.exercises.map((exercise) => exercise.id))
+  const mainQueue = queueState.mainQueue.filter((id) => validIds.has(id))
+  const fallbackMainQueue = mainQueue.length > 0 ? mainQueue : lesson.exercises.map((exercise) => exercise.id)
+  const reviewQueue = queueState.reviewQueue.filter((id) => validIds.has(id))
+  const firstPassMistakes = queueState.firstPassMistakes.filter((id) => validIds.has(id))
+
+  const mistakeSet = Object.fromEntries(
+    Object.entries(queueState.mistakeSet).filter(([id, value]) => validIds.has(id) && Boolean(value)),
+  )
+
+  const mainIndex = Math.max(0, Math.min(queueState.mainIndex, fallbackMainQueue.length))
+  const phase =
+    queueState.phase === 'review' && reviewQueue.length === 0
+      ? 'complete'
+      : queueState.phase === 'main' && mainIndex >= fallbackMainQueue.length
+        ? reviewQueue.length > 0
+          ? 'review'
+          : 'complete'
+        : queueState.phase
+
+  return {
+    phase,
+    mainQueue: fallbackMainQueue,
+    mainIndex,
+    reviewQueue,
+    firstPassMistakes,
+    mistakeSet,
+  }
+}
+
+const buildQueueStateFromLegacyResume = (
+  lesson: LessonData,
+  resume: LessonResumeState,
+): LessonQueueState => {
+  const defaultQueue = createLessonQueueState(lesson.exercises.map((exercise) => exercise.id))
+  const legacyQueue = Array.isArray(resume.queue) && resume.queue.length > 0 ? resume.queue : defaultQueue.mainQueue
+  const firstPassMistakes = Array.isArray(resume.firstPassMistakes) ? resume.firstPassMistakes : []
+  const mistakeSet = Object.fromEntries(firstPassMistakes.map((id) => [id, true] as const))
+  const safeIndex = Math.max(0, Math.min(resume.currentIndex ?? 0, legacyQueue.length))
+
+  const phase = resume.needsMistakeIntro
+    ? 'review'
+    : legacyQueue.length > 0 && safeIndex < legacyQueue.length
+      ? 'main'
+      : firstPassMistakes.length > 0
+        ? 'review'
+        : 'complete'
+
+  const legacyState: LessonQueueState = {
+    phase,
+    mainQueue: lesson.exercises.map((exercise) => exercise.id),
+    mainIndex: phase === 'main' ? safeIndex : lesson.exercises.length,
+    reviewQueue: phase === 'review' ? [...legacyQueue] : [],
+    firstPassMistakes,
+    mistakeSet,
+  }
+
+  return normalizeQueueState(legacyState, lesson)
 }
 
 const baseState = {
@@ -80,6 +151,41 @@ export const useLessonSessionStore = create<LessonSessionState>((set, get) => ({
       lesson,
       queueState: createLessonQueueState(lesson.exercises.map((exercise) => exercise.id)),
       startedAt: nowIso(),
+    })
+  },
+
+  restoreLesson: (lesson, resume) => {
+    const queueState = resume.queueState
+      ? normalizeQueueState(
+          {
+            phase: resume.queueState.phase,
+            mainQueue: [...resume.queueState.mainQueue],
+            mainIndex: resume.queueState.mainIndex,
+            reviewQueue: [...resume.queueState.reviewQueue],
+            firstPassMistakes: [...resume.queueState.firstPassMistakes],
+            mistakeSet: { ...resume.queueState.mistakeSet },
+          },
+          lesson,
+        )
+      : buildQueueStateFromLegacyResume(lesson, resume)
+
+    const normalizedCombo = {
+      current: Math.max(0, resume.combo?.current ?? 0),
+      best: Math.max(0, resume.combo?.best ?? 0),
+    }
+
+    set({
+      ...baseState,
+      lesson,
+      queueState,
+      answers: (resume.answers ?? {}) as Record<string, UserAnswer>,
+      attempts: { ...(resume.attempts ?? {}) },
+      correctByExercise: { ...(resume.correctByExercise ?? {}) },
+      firstPassCorrectByExercise: { ...(resume.firstPassCorrectByExercise ?? {}) },
+      combo: normalizedCombo,
+      startedAt: resume.startedAt,
+      needsMistakeIntro:
+        Boolean(resume.needsMistakeIntro) && (queueState.phase === 'review' || queueState.phase === 'main'),
     })
   },
 
@@ -212,7 +318,7 @@ export const useLessonSessionStore = create<LessonSessionState>((set, get) => ({
     }
   },
 
-  toResumeState: () => {
+  toResumeState: (draftByExercise) => {
     const state = get()
     if (!state.lesson || !state.queueState || !state.startedAt) {
       return null
@@ -221,9 +327,34 @@ export const useLessonSessionStore = create<LessonSessionState>((set, get) => ({
     const queueResume = buildQueueResume(state.queueState)
     return {
       lessonId: state.lesson.id,
+      queueState: {
+        phase: state.queueState.phase,
+        mainQueue: [...state.queueState.mainQueue],
+        mainIndex: state.queueState.mainIndex,
+        reviewQueue: [...state.queueState.reviewQueue],
+        firstPassMistakes: [...state.queueState.firstPassMistakes],
+        mistakeSet: { ...state.queueState.mistakeSet },
+      },
+      answers: state.answers,
+      attempts: { ...state.attempts },
+      correctByExercise: { ...state.correctByExercise },
+      firstPassCorrectByExercise: { ...state.firstPassCorrectByExercise },
+      combo: { ...state.combo },
+      needsMistakeIntro: state.needsMistakeIntro,
+      draftByExercise: draftByExercise
+        ? Object.fromEntries(
+            Object.entries(draftByExercise).map(([exerciseId, draft]) => [
+              exerciseId,
+              {
+                selectImage: draft.selectImage,
+                choice: draft.choice,
+                tokens: [...draft.tokens],
+              },
+            ]),
+          )
+        : undefined,
       queue: queueResume.queue,
       currentIndex: queueResume.currentIndex,
-      answers: state.answers,
       firstPassMistakes: [...state.queueState.firstPassMistakes],
       startedAt: state.startedAt,
     }

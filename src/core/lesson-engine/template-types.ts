@@ -13,7 +13,13 @@ export type LocalizedRichTextSegment = {
 
 export type LessonAudioSpec =
   | { mode: 'tts'; text: LocalizedText; lang: string; rate?: number }
-  | { mode: 'file'; src: string; slowSrc?: string }
+  | {
+      mode: 'file'
+      src: string
+      slowSrc?: string
+      required?: boolean
+      id?: string
+    }
 
 type TemplateBaseExercise = {
   id: string

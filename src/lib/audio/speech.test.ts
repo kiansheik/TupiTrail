@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 
-import { playAudioSpec } from '@/lib/audio/speech'
+import { getAudioSourceCandidates, playAudioSpec } from '@/lib/audio/speech'
 
 describe('playAudioSpec (tts)', () => {
   beforeEach(() => {
@@ -51,5 +51,21 @@ describe('playAudioSpec (tts)', () => {
     expect(utterance.text).toBe('coffee')
     expect(utterance.lang).toBe('en-US')
     expect(utterance.rate).toBe(0.9)
+  })
+})
+
+describe('getAudioSourceCandidates', () => {
+  it('adds ogg fallback for mp3 sources', () => {
+    expect(getAudioSourceCandidates('/audio/unit1/tea.mp3')).toEqual([
+      '/audio/unit1/tea.mp3',
+      '/audio/unit1/tea.ogg',
+    ])
+  })
+
+  it('adds mp3 fallback for ogg sources', () => {
+    expect(getAudioSourceCandidates('/audio/unit1/tea.ogg')).toEqual([
+      '/audio/unit1/tea.ogg',
+      '/audio/unit1/tea.mp3',
+    ])
   })
 })

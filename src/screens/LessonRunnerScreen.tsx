@@ -16,8 +16,10 @@ import { ComboBanner } from '@/components/ui/ComboBanner'
 import { FeedbackPanel } from '@/components/ui/FeedbackPanel'
 import { SlowAudioButton } from '@/components/ui/SlowAudioButton'
 import { evaluateExercise } from '@/core/lesson-engine/evaluator'
+import { randomizeExerciseResponses } from '@/core/lesson-engine/randomizeResponses'
 import { getCurrentExerciseId, type LessonQueueState } from '@/core/lesson-engine/session'
 import type { Exercise, UserAnswer } from '@/core/lesson-engine/types'
+import { lessonById } from '@/data/course'
 import { playSfx } from '@/lib/audio/sfx'
 import { playAudioSpec } from '@/lib/audio/speech'
 import { useAppStore } from '@/store/useAppStore'
@@ -169,10 +171,13 @@ export const LessonRunnerScreen = () => {
   const queueState = useLessonSessionStore((state) => state.queueState)
   const feedback = useLessonSessionStore((state) => state.feedback)
   const combo = useLessonSessionStore((state) => state.combo)
+  const attempts = useLessonSessionStore((state) => state.attempts)
   const needsMistakeIntro = useLessonSessionStore((state) => state.needsMistakeIntro)
+  const restoreLesson = useLessonSessionStore((state) => state.restoreLesson)
   const submitAnswer = useLessonSessionStore((state) => state.submitAnswer)
   const continueAfterFeedback = useLessonSessionStore((state) => state.continueAfterFeedback)
   const toResumeState = useLessonSessionStore((state) => state.toResumeState)
+  const lessonResume = useAppStore((state) => state.lessonResume)
   const saveLessonResume = useAppStore((state) => state.saveLessonResume)
 
   const currentExerciseId = queueState ? getCurrentExerciseId(queueState) : null
@@ -181,15 +186,41 @@ export const LessonRunnerScreen = () => {
     [lesson, currentExerciseId],
   )
 
-  const [draftByExercise, setDraftByExercise] = useState<Record<string, DraftAnswer>>({})
+  const [draftByExercise, setDraftByExercise] = useState<Record<string, DraftAnswer>>(() => {
+    if (lessonResume?.lessonId === lessonId && !lesson) {
+      return lessonResume.draftByExercise ?? {}
+    }
+    return {}
+  })
   const [explanationExerciseId, setExplanationExerciseId] = useState<string | null>(null)
   const draft = currentExerciseId ? draftByExercise[currentExerciseId] ?? blankDraft() : blankDraft()
   const showExplanation = explanationExerciseId === currentExerciseId
+  const currentAttemptCount = currentExerciseId ? (attempts[currentExerciseId] ?? 0) : 0
+  const responseOrderAttempt = feedback ? Math.max(currentAttemptCount - 1, 0) : currentAttemptCount
+  const renderedExercise = useMemo(() => {
+    if (!currentExercise) {
+      return null
+    }
+    return randomizeExerciseResponses(currentExercise, `${currentExercise.id}:attempt:${responseOrderAttempt}`)
+  }, [currentExercise, responseOrderAttempt])
 
   const totalExercises = lesson?.exercises.length ?? 1
   const mainIndex = queueState?.mainIndex ?? 0
   const rawProgress = computeSessionProgress(queueState, totalExercises)
   const progress = queueState?.phase === 'main' && mainIndex === 0 ? Math.max(rawProgress, 8) : rawProgress
+
+  useEffect(() => {
+    if (lesson || !lessonResume || lessonResume.lessonId !== lessonId) {
+      return
+    }
+
+    const lessonFromData = lessonById.get(lessonResume.lessonId)
+    if (!lessonFromData) {
+      return
+    }
+
+    restoreLesson(lessonFromData, lessonResume)
+  }, [lesson, lessonResume, lessonId, restoreLesson])
 
   useEffect(() => {
     if (!currentExercise || feedback) {
@@ -217,17 +248,26 @@ export const LessonRunnerScreen = () => {
   }, [needsMistakeIntro, queueState, lesson, navigate])
 
   useEffect(() => {
-    saveLessonResume(toResumeState())
-  }, [queueState, toResumeState, saveLessonResume, draftByExercise])
+    if (!lesson || !queueState) {
+      return
+    }
+    saveLessonResume(toResumeState(draftByExercise))
+  }, [lesson, queueState, toResumeState, saveLessonResume, draftByExercise])
 
-  if (!lesson || !queueState || !currentExercise) {
+  const isHydratingFromResume = !lesson && Boolean(lessonResume && lessonResume.lessonId === lessonId)
+
+  if (!lesson || !queueState || !currentExercise || !renderedExercise) {
     return (
       <ScreenScaffold
-        title="Sessão indisponível"
-        subtitle="Inicie a lição novamente"
+        title={isHydratingFromResume ? 'Retomando sessão...' : 'Sessão indisponível'}
+        subtitle={isHydratingFromResume ? 'Carregando seu progresso salvo' : 'Inicie a lição novamente'}
         bottomSlot={<Button onClick={() => navigate(`/lesson/${lessonId}/intro`)}>Voltar</Button>}
       >
-        <p className="text-sm font-bold text-ink/70">Não foi possível carregar os exercícios desta sessão.</p>
+        <p className="text-sm font-bold text-ink/70">
+          {isHydratingFromResume
+            ? 'Estamos restaurando exatamente de onde você parou.'
+            : 'Não foi possível carregar os exercícios desta sessão.'}
+        </p>
       </ScreenScaffold>
     )
   }
@@ -258,7 +298,32 @@ export const LessonRunnerScreen = () => {
   }
 
   const onSlowAudio = () => {
-    playAudioSpec(currentExercise.slowAudio ?? currentExercise.audio)
+    if (currentExercise.audio?.mode === 'file') {
+      if (currentExercise.slowAudio?.mode === 'file') {
+        playAudioSpec(currentExercise.slowAudio, {
+          fallbackAudioSpec: currentExercise.audio,
+          fallbackPlaybackRate: 0.6,
+        })
+      } else {
+        playAudioSpec(currentExercise.audio, { playbackRate: 0.6 })
+      }
+      return
+    }
+
+    if (currentExercise.slowAudio?.mode === 'tts') {
+      playAudioSpec(currentExercise.slowAudio)
+      return
+    }
+
+    if (currentExercise.audio?.mode === 'tts') {
+      playAudioSpec({
+        ...currentExercise.audio,
+        rate: 0.65,
+      })
+      return
+    }
+
+    playAudioSpec(currentExercise.audio)
   }
 
   const addToken = (token: string) => {
@@ -296,6 +361,22 @@ export const LessonRunnerScreen = () => {
   const currentNewWord = extractNewWord(currentExercise)
   const audioLabel = getAudioLabel(currentExercise)
   const headerMeta = getExerciseHeaderMeta(currentExercise, currentNewWord)
+  const listeningAccessory =
+    currentExercise.type === 'listening_tap' ? (
+      <div className="inline-flex w-fit border border-ink/10 bg-white shadow-[0_3px_0_rgba(27,43,38,0.08)]">
+        {currentExercise.audio ? (
+          <AudioButton
+            onClick={onReplayAudio}
+            iconOnly
+            className="h-11 w-14 rounded-none border-0 border-r border-ink/10 px-0 py-0 text-xl shadow-none"
+          />
+        ) : null}
+        <SlowAudioButton
+          onClick={onSlowAudio}
+          className="h-11 w-14 rounded-none border-0 px-0 py-0 text-xl shadow-none"
+        />
+      </div>
+    ) : null
 
   return (
     <ScreenScaffold
@@ -338,33 +419,22 @@ export const LessonRunnerScreen = () => {
       <div className="space-y-4">
         <ComboBanner combo={combo.current} />
 
-        <ExerciseHeader exercise={currentExercise} currentNewWord={currentNewWord} onReplayAudio={onReplayAudio} />
+        <ExerciseHeader
+          exercise={currentExercise}
+          currentNewWord={currentNewWord}
+          onReplayAudio={onReplayAudio}
+          rightAccessory={listeningAccessory}
+        />
 
-        {!headerMeta.hasPromptBubble && !headerMeta.showSelectImageWordRow ? (
-          currentExercise.type === 'listening_tap' ? (
-            <div className="inline-flex w-fit overflow-hidden rounded-chunky border-2 border-ink/20 bg-white shadow-chunky">
-              {currentExercise.audio ? (
-                <AudioButton
-                  onClick={onReplayAudio}
-                  iconOnly
-                  className="h-11 w-14 rounded-none border-0 border-r-2 border-ink/15 px-0 py-0 text-xl shadow-none"
-                />
-              ) : null}
-              <SlowAudioButton
-                onClick={onSlowAudio}
-                className="h-11 w-14 rounded-none border-0 px-0 py-0 text-xl shadow-none"
-              />
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
-            </div>
-          )
+        {!headerMeta.hasPromptBubble && !headerMeta.showSelectImageWordRow && currentExercise.type !== 'listening_tap' ? (
+          <div className="flex gap-2">
+            {currentExercise.audio ? <AudioButton onClick={onReplayAudio} label={audioLabel} /> : null}
+          </div>
         ) : null}
 
         {currentExercise.type === 'select_image' ? (
           <SelectImageExercise
-            exercise={currentExercise}
+            exercise={renderedExercise.type === 'select_image' ? renderedExercise : currentExercise}
             selectedOptionId={draft.selectImage}
             onSelect={(optionId) => {
               if (!currentExerciseId) {
@@ -383,7 +453,7 @@ export const LessonRunnerScreen = () => {
 
         {currentExercise.type === 'token_translate' ? (
           <TokenTranslateExercise
-            exercise={currentExercise}
+            exercise={renderedExercise.type === 'token_translate' ? renderedExercise : currentExercise}
             selectedTokens={draft.tokens}
             onAddToken={(token) => addToken(token)}
             onRemoveToken={removeToken}
@@ -392,7 +462,7 @@ export const LessonRunnerScreen = () => {
 
         {currentExercise.type === 'multiple_choice_translation' ? (
           <MultipleChoiceExercise
-            exercise={currentExercise}
+            exercise={renderedExercise.type === 'multiple_choice_translation' ? renderedExercise : currentExercise}
             selectedChoice={draft.choice}
             onSelect={(choice) => {
               if (!currentExerciseId) {
@@ -411,7 +481,7 @@ export const LessonRunnerScreen = () => {
 
         {currentExercise.type === 'dialogue_choice' ? (
           <DialogueChoiceExercise
-            exercise={currentExercise}
+            exercise={renderedExercise.type === 'dialogue_choice' ? renderedExercise : currentExercise}
             selectedChoice={draft.choice}
             omitFirstServerLine={Boolean(headerMeta.dialogueHeaderText)}
             onSelect={(choice) => {
@@ -431,7 +501,7 @@ export const LessonRunnerScreen = () => {
 
         {currentExercise.type === 'listening_tap' ? (
           <ListeningTapExercise
-            exercise={currentExercise}
+            exercise={renderedExercise.type === 'listening_tap' ? renderedExercise : currentExercise}
             selectedTokens={draft.tokens}
             onAddToken={(token) => addToken(token)}
             onRemoveToken={removeToken}

@@ -6,6 +6,7 @@ import { ScreenScaffold } from '@/components/layout/ScreenScaffold'
 import { Button } from '@/components/ui/Button'
 import { CharacterAvatar } from '@/components/ui/CharacterAvatar'
 import { LessonSummaryCard } from '@/components/ui/LessonSummaryCard'
+import { lessonById } from '@/data/course'
 import { uiStrings } from '@/data/ui'
 import { playSfx } from '@/lib/audio/sfx'
 import { useAppStore } from '@/store/useAppStore'
@@ -17,13 +18,29 @@ export const LessonCompleteScreen = () => {
   const lessonId = params.lessonId ?? 'unit1-lesson1'
 
   const buildLessonResult = useLessonSessionStore((state) => state.buildLessonResult)
+  const lesson = useLessonSessionStore((state) => state.lesson)
+  const restoreLesson = useLessonSessionStore((state) => state.restoreLesson)
   const resetSession = useLessonSessionStore((state) => state.reset)
   const applyLessonResult = useAppStore((state) => state.applyLessonResult)
+  const lessonResume = useAppStore((state) => state.lessonResume)
   const result = buildLessonResult()
 
   useEffect(() => {
     playSfx('finish')
   }, [])
+
+  useEffect(() => {
+    if (result || lesson || !lessonResume || lessonResume.lessonId !== lessonId) {
+      return
+    }
+
+    const lessonFromData = lessonById.get(lessonResume.lessonId)
+    if (!lessonFromData) {
+      return
+    }
+
+    restoreLesson(lessonFromData, lessonResume)
+  }, [result, lesson, lessonResume, lessonId, restoreLesson])
 
   if (!result) {
     return (
