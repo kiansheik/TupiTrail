@@ -49,9 +49,10 @@ export const playAudioSpec = (audioSpec: AudioSpec | undefined, options?: PlayAu
     const sources = getAudioSourceCandidates(audioSpec.src)
     let sourceIndex = 0
     const element = new Audio(sources[sourceIndex])
-    if (options?.playbackRate && Number.isFinite(options.playbackRate)) {
-      element.playbackRate = Math.max(0.5, Math.min(1.2, options.playbackRate))
-    }
+    element.playbackRate = Math.max(
+      0.5,
+      Math.min(1.2, options?.playbackRate ?? 1),
+    )
     const onError = () => {
       if (sourceIndex + 1 >= sources.length) {
         if (options?.fallbackAudioSpec) {

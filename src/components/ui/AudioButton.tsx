@@ -8,7 +8,7 @@ type AudioButtonProps = {
   className?: string
 }
 
-export const AudioButton = ({ onClick, label = '🔊 Escutar', iconOnly = false, className }: AudioButtonProps) => {
+export const AudioButton = ({ onClick, label = '🔊', iconOnly = false, className }: AudioButtonProps) => {
   return (
     <Button
       type="button"

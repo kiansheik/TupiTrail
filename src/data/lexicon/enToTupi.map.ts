@@ -5,7 +5,7 @@ import type { EnToTupiMap } from '@/data/lexicon/types'
 // Keys default to "en:<normalized_term_or_phrase>" unless explicitly set in lesson data.
 export const enToTupiMap: EnToTupiMap = {
   'en:coffee': 'kapery', // coffee
-  'en:coffee_or_tea': "kapery konipó ka'ary", // Coffee or tea?
+  'en:coffee_or_tea': "kapery-pe konipó ka'ary", // Coffee or tea?
   'en:i_want_coffee': "a'useî kapery", // I want coffee.
   'en:i_want_tea': "a'useî ka'ary", // I want tea.
   'en:i_want_water': "a'useî 'y", // I want water.
@@ -14,8 +14,8 @@ export const enToTupiMap: EnToTupiMap = {
   'en:please': 'nde angaturama resé', // please
   'en:sugar': "takûare'ẽypy'oka", // sugar
   'en:tea': "ka'ary", // tea
-  'en:tea_or_coffee': "ka'ary konipó kapery", // Tea or coffee?
-  'en:thank_you': 'orokugûab', // Thank you.
+  'en:tea_or_coffee': "ka'ary-pe konipó kapery", // Tea or coffee?
+  'en:thank_you': 'aîkugûab', // Thank you.
   'en:water': "'y", // water
   'en:welcome': 'Eîkobé', // Welcome
 
@@ -23,7 +23,11 @@ export const enToTupiMap: EnToTupiMap = {
   'en:coffee_please': 'kapery, nde angaturama resé', // Coffee, please.
   'en:tea_please': "ka'ary, nde angaturama resé", // Tea, please.
   'en:water_please': "'y, nde angaturama resé", // Water, please.
-  'en:thank': 'kugûab', // Thank
+  'en:thank': 'aîkugûab', // Thank
   'en:you': 'oro',
+
+  // Auto-added by `make generate-englishtotupi-map`:
+  'en:i_want': "a'useî", // I want
+  'en:kapery_pe': 'kaperype', // kapery-pe
 }
 

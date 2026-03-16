@@ -98,6 +98,7 @@ const materializeExercise = (exercise: ExerciseTemplate): Exercise => {
         promptSegments: resolveSegments(exercise.promptSegments),
         audio: resolveAudio(exercise.audio),
         slowAudio: resolveAudio(exercise.slowAudio),
+        answerAudio: resolveAudio(exercise.answerAudio),
       }
       return resolved
     }

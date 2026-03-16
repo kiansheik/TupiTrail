@@ -32,16 +32,18 @@ export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio, rightA
         <div className={`min-w-0 flex-1 ${meta.isTokenTranslatePrompt ? '-ml-1 pt-0.5' : 'pt-1'}`}>
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
-              <SpeechBubble>
+              <SpeechBubble tail={meta.isTokenTranslatePrompt ? 'left' : 'left'}>
                 <p className="text-lg font-black leading-snug text-ink">
-                  {exercise.promptSegments?.map((segment, index) => (
-                    <span
-                      key={`${segment.text}-${index}`}
-                      className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
-                    >
-                      {segment.text}
-                    </span>
-                  ))}
+                  {exercise.promptSegments && exercise.promptSegments.length > 0
+                    ? exercise.promptSegments.map((segment, index) => (
+                        <span
+                          key={`${segment.text}-${index}`}
+                          className={segment.highlight === 'new-word' ? 'new-word-fancy inline-block px-1' : ''}
+                        >
+                          {segment.text}
+                        </span>
+                      ))
+                    : null}
                 </p>
               </SpeechBubble>
             </div>

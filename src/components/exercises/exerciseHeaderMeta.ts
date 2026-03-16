@@ -16,7 +16,8 @@ export const getExerciseHeaderMeta = (
   const isTokenTranslatePrompt = exercise.type === 'token_translate' && hasPromptBubble
   const showSelectImageWordRow =
     exercise.type === 'select_image' && Boolean(exercise.newWordBadge) && Boolean(currentNewWord)
-  const multipleChoicePromptText = exercise.type === 'multiple_choice_translation' ? exercise.prompt : null
+  const multipleChoicePromptText =
+    exercise.type === 'multiple_choice_translation' && !hasPromptBubble ? exercise.prompt : null
   const dialogueHeaderText =
     exercise.type === 'dialogue_choice'
       ? exercise.dialogue.find(

@@ -85,6 +85,7 @@ export type DialogueChoiceExercise = BaseExercise & {
   dialogue: DialogueLine[]
   choices: string[]
   correctChoice: string
+  answerAudio?: AudioSpec
 }
 
 export type ListeningTapExercise = BaseExercise & {

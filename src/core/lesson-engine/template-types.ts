@@ -70,6 +70,7 @@ export type DialogueChoiceExerciseTemplate = TemplateBaseExercise & {
   }>
   choices: LocalizedText[]
   correctChoice: LocalizedText
+  answerAudio?: LessonAudioSpec
 }
 
 export type ListeningTapExerciseTemplate = TemplateBaseExercise & {

@@ -134,7 +134,7 @@ const getAudioLabel = (exercise: Exercise): string => {
     return `🔊 ${normalizeAudioLabel(exercise.audio.text)}`
   }
 
-  return '🔊 Escutar'
+  return '🔊'
 }
 
 const computeSessionProgress = (queueState: LessonQueueState | null, totalExercises: number): number => {
@@ -283,6 +283,16 @@ export const LessonRunnerScreen = () => {
       playSfx('correct')
       if (useLessonSessionStore.getState().combo.current >= 3) {
         playSfx('combo')
+      }
+      // Play answer audio after correct answer
+      if (currentExercise.type === 'dialogue_choice') {
+        if (currentExercise.answerAudio) {
+          playAudioSpec(currentExercise.answerAudio)
+        } else if (currentExercise.audio) {
+          playAudioSpec(currentExercise.audio)
+        }
+      } else if (currentExercise.audio) {
+        playAudioSpec(currentExercise.audio)
       }
     } else {
       playSfx('incorrect')
