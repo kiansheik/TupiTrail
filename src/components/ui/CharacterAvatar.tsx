@@ -29,7 +29,7 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
     }
 
     return (
-      <svg viewBox="0 0 100 100" className={cn('h-24 w-24', className)} aria-label="Bird mascot">
+      <svg viewBox="0 0 100 100" className={cn('h-16 w-16', className)} aria-label="Bird mascot">
         <circle cx="50" cy="50" r="42" fill="#2eb489" />
         {blink ? (
           <>
@@ -67,7 +67,7 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
 
   if (id === 'woman') {
     return (
-      <svg viewBox="0 0 100 100" className={cn('h-24 w-24', className)} aria-label="Woman avatar">
+      <svg viewBox="0 0 100 100" className={cn('h-16 w-16', className)} aria-label="Woman avatar">
         <circle cx="50" cy="50" r="42" fill="#ffb59a" />
         <path d="M18 52c0-24 14-38 32-38s32 14 32 38v16H18z" fill="#8b4d34" />
         <circle cx="38" cy="48" r="3" fill="#1b2b26" />
@@ -79,7 +79,7 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
 
   if (id === 'man') {
     return (
-      <svg viewBox="0 0 100 100" className={cn('h-24 w-24', className)} aria-label="Man avatar">
+      <svg viewBox="0 0 100 100" className={cn('h-16 w-16', className)} aria-label="Man avatar">
         <circle cx="50" cy="50" r="42" fill="#f6c48f" />
         <path d="M22 44c4-20 20-30 38-24 11 4 16 12 18 26H22z" fill="#355070" />
         <circle cx="38" cy="50" r="3" fill="#1b2b26" />
@@ -91,7 +91,7 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
 
   if (id === 'nonbinary') {
     return (
-      <svg viewBox="0 0 100 100" className={cn('h-24 w-24', className)} aria-label="Nonbinary avatar">
+      <svg viewBox="0 0 100 100" className={cn('h-16 w-16', className)} aria-label="Nonbinary avatar">
         <circle cx="50" cy="50" r="42" fill="#ffd166" />
         <path d="M18 54c0-22 14-36 32-36 22 0 32 16 32 36v12H18z" fill="#6a4c93" />
         <circle cx="38" cy="50" r="3" fill="#1b2b26" />
@@ -102,7 +102,7 @@ export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false
   }
 
   return (
-    <svg viewBox="0 0 100 100" className={cn('h-24 w-24', className)} aria-label="Bear avatar">
+    <svg viewBox="0 0 100 100" className={cn('h-16 w-16', className)} aria-label="Bear avatar">
       <circle cx="50" cy="52" r="38" fill="#8d6e63" />
       <circle cx="24" cy="26" r="12" fill="#8d6e63" />
       <circle cx="76" cy="26" r="12" fill="#8d6e63" />

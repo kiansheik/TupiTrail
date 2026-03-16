@@ -14,7 +14,7 @@ export const SpeechBubble = ({ children, tail = 'left', className, tailClassName
   return (
     <div
       className={cn(
-        'relative rounded-3xl border-2 border-ink/20 bg-white p-4 text-base font-bold text-ink',
+        'relative rounded-2xl border-2 border-ink/20 bg-white p-3 text-base font-bold text-ink',
         className,
       )}
     >

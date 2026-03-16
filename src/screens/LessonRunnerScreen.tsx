@@ -179,6 +179,8 @@ export const LessonRunnerScreen = () => {
   const toResumeState = useLessonSessionStore((state) => state.toResumeState)
   const lessonResume = useAppStore((state) => state.lessonResume)
   const saveLessonResume = useAppStore((state) => state.saveLessonResume)
+  const completedLessons = useAppStore((state) => state.progress.completedLessons)
+  const hasCompletedALesson = Object.keys(completedLessons).length > 0
 
   const currentExerciseId = queueState ? getCurrentExerciseId(queueState) : null
   const currentExercise = useMemo(
@@ -392,13 +394,21 @@ export const LessonRunnerScreen = () => {
     <ScreenScaffold
       progress={progress}
       combo={combo.current}
+      onExit={hasCompletedALesson ? () => navigate('/map') : undefined}
       title={currentExercise.instruction}
-      subtitle={queueState.phase === 'review' ? 'Modo revisão' : 'Lição principal'}
       bottomSlot={
         <div className="space-y-3">
           <AnimatePresence>
             {feedback ? (
-              <FeedbackPanel feedback={feedback.result} correctAnswerLabel={correctAnswerText(currentExercise)} />
+              <FeedbackPanel
+                  feedback={feedback.result}
+                  correctAnswerLabel={correctAnswerText(currentExercise)}
+                  message={
+                    feedback.result.isCorrect
+                      ? currentExercise.explanation?.correct
+                      : currentExercise.explanation?.incorrect
+                  }
+                />
             ) : null}
           </AnimatePresence>
 
@@ -426,7 +436,7 @@ export const LessonRunnerScreen = () => {
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         <ComboBanner combo={combo.current} />
 
         <ExerciseHeader

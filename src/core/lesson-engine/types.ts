@@ -51,6 +51,8 @@ export type SelectImageOption = {
   id: string
   label: string
   imageEmoji: string
+  /** Data URL or resolved file path. When present, rendered instead of imageEmoji. */
+  imageSrc?: string
 }
 
 export type SelectImageExercise = BaseExercise & {

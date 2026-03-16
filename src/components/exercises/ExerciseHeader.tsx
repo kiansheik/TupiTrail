@@ -33,7 +33,7 @@ export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio, rightA
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
               <SpeechBubble tail={meta.isTokenTranslatePrompt ? 'left' : 'left'}>
-                <p className="text-lg font-black leading-snug text-ink">
+                <p className="text-base font-black leading-snug text-ink">
                   {exercise.promptSegments && exercise.promptSegments.length > 0
                     ? exercise.promptSegments.map((segment, index) => (
                         <span
@@ -53,7 +53,7 @@ export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio, rightA
       ) : null}
 
       {meta.showSelectImageWordRow ? (
-        <div className="flex min-w-0 flex-1 items-center gap-2 pt-[57px] -ml-5">
+        <div className="flex min-w-0 flex-1 items-center gap-2 pt-9 -ml-4">
           {exercise.audio ? <AudioButton onClick={onReplayAudio} iconOnly /> : null}
           {currentNewWord ? (
             <div className="min-w-0 flex-1">
@@ -69,7 +69,7 @@ export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio, rightA
 
       {showDialogueHeaderRow ? (
         <div className="min-w-0 flex-1 pt-1">
-          <p className="mb-1 text-xs font-black uppercase text-ink/45">Server</p>
+          <p className="mb-1 text-xs font-black uppercase text-ink/45">Garçom</p>
           <SpeechBubble className="border-[#b8ccff] bg-[#eef4ff]" tailClassName="border-[#b8ccff] bg-[#eef4ff]">
             {meta.dialogueHeaderText}
           </SpeechBubble>
@@ -78,9 +78,9 @@ export const ExerciseHeader = ({ exercise, currentNewWord, onReplayAudio, rightA
 
       {showMultipleChoiceHeaderRow ? (
         <div className="min-w-0 flex-1 pt-1">
-          <p className="mb-1 text-xs font-black uppercase text-ink/45">Server</p>
+          <p className="mb-1 text-xs font-black uppercase text-ink/45">Garçom</p>
           <SpeechBubble className="border-[#b8ccff] bg-[#eef4ff]" tailClassName="border-[#b8ccff] bg-[#eef4ff]">
-            <p className="text-xl font-black leading-tight text-ink">{meta.multipleChoicePromptText}</p>
+            <p className="text-base font-black leading-tight text-ink">{meta.multipleChoicePromptText}</p>
           </SpeechBubble>
         </div>
       ) : null}

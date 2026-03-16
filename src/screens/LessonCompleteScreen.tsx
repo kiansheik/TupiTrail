@@ -106,7 +106,9 @@ export const LessonCompleteScreen = () => {
   const resetSession = useLessonSessionStore((state) => state.reset)
   const applyLessonResult = useAppStore((state) => state.applyLessonResult)
   const lessonResume = useAppStore((state) => state.lessonResume)
+  const completedLessons = useAppStore((state) => state.progress.completedLessons)
   const result = buildLessonResult()
+  const isFirstLesson = Object.keys(completedLessons).length === 0
 
   useEffect(() => {
     playSfx('finish')
@@ -139,7 +141,7 @@ export const LessonCompleteScreen = () => {
   const claim = () => {
     applyLessonResult(result)
     resetSession()
-    navigate('/streak/ignite')
+    navigate(isFirstLesson ? '/streak/ignite' : '/map')
   }
 
   return (
@@ -175,7 +177,7 @@ export const LessonCompleteScreen = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.46 }}
           >
-            Você concluiu a primeira lição
+            {isFirstLesson ? 'Você concluiu a primeira lição' : 'Lição concluída!'}
           </motion.p>
         </div>
 

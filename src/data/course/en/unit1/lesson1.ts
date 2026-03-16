@@ -195,8 +195,8 @@ export const lesson1Template: LessonTemplateData = {
       audio: repoAudio('unit1/shared/normalized/tea-or-coffee.ogg', { id: 'phrase-tea-or-coffee' }),
       answerAudio: repoAudio('unit1/shared/normalized/tea-please.ogg', { id: 'phrase-tea-please' }),
       dialogue: [
-        { speaker: 'Server', text: en('Tea or coffee?') },
-        { speaker: 'You', isBlank: true },
+        { speaker: 'Garçom', text: en('Tea or coffee?') },
+        { speaker: 'Você', isBlank: true },
       ],
       choices: [en('Tea, please.'), en('Welcome!'), en('Thank you!')],
       correctChoice: en('Tea, please.'),
@@ -223,8 +223,8 @@ export const lesson1Template: LessonTemplateData = {
       instruction: 'Complete o diálogo',
       character: { id: 'bear', mood: 'neutral' },
       dialogue: [
-        { speaker: 'Server', text: en('Tea or coffee?') },
-        { speaker: 'You', isBlank: true },
+        { speaker: 'Garçom', text: en('Tea or coffee?') },
+        { speaker: 'Você', isBlank: true },
       ],
       choices: [en('I want coffee.'), en('I want water.'), en('Thank you.')],
       correctChoice: en('I want coffee.'),
@@ -261,8 +261,8 @@ export const lesson1Template: LessonTemplateData = {
       instruction: 'Complete o diálogo',
       character: { id: 'man', mood: 'thinking' },
       dialogue: [
-        { speaker: 'Server', text: en('Coffee or tea?') },
-        { speaker: 'You', isBlank: true },
+        { speaker: 'Garçom', text: en('Coffee or tea?') },
+        { speaker: 'Você', isBlank: true },
       ],
       choices: [en('I want tea.'), en('I want water.'), en('Welcome!')],
       correctChoice: en('I want tea.'),

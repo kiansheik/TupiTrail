@@ -16,9 +16,12 @@ export const DialogueChoiceExercise = ({
   onSelect,
   omitFirstServerLine = false,
 }: DialogueChoiceExerciseProps) => {
+  const isServerSpeaker = (s: string) => ['server', 'garçom', 'garcom', 'atendente'].includes(s.trim().toLowerCase())
+  const isYouSpeaker    = (s: string) => ['you', 'você', 'voce', 'eu'].includes(s.trim().toLowerCase())
+
   const visibleDialogue = omitFirstServerLine
     ? exercise.dialogue.filter(
-        (line, index) => !(index === 0 && line.speaker.trim().toLowerCase() === 'server' && !line.isBlank),
+        (line, index) => !(index === 0 && isServerSpeaker(line.speaker) && !line.isBlank),
       )
     : exercise.dialogue
 
@@ -26,7 +29,7 @@ export const DialogueChoiceExercise = ({
     <div className="space-y-4">
       <div className="space-y-2">
         {visibleDialogue.map((line, index) => {
-          const isUserLine = line.speaker.trim().toLowerCase() === 'you'
+          const isUserLine = isYouSpeaker(line.speaker)
 
           return (
             <div

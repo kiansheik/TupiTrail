@@ -231,22 +231,32 @@ export const useAppStore = create<AppState>()(
                 bestCombo: result.bestCombo,
               },
             },
-            unlockedLessons: Array.from(
-              new Set([...state.progress.unlockedLessons, result.lessonId, 'unit1-lesson2']),
-            ),
-            currentMapPosition: {
-              unitId: 'unit1',
-              lessonId: 'unit1-lesson2',
-            },
-            pathNodes: state.progress.pathNodes.map((node, index) => {
-              if (node.lessonId === result.lessonId) {
-                return { ...node, completed: true }
-              }
-              if (index === 1) {
-                return { ...node, unlocked: true }
-              }
-              return node
-            }),
+            pathNodes: (() => {
+              const nodes = state.progress.pathNodes
+              const completedIdx = nodes.findIndex((n) => n.lessonId === result.lessonId)
+              const nextNode = completedIdx >= 0 ? nodes[completedIdx + 1] : undefined
+              return nodes.map((node, index) => {
+                if (index === completedIdx) return { ...node, completed: true }
+                if (nextNode && index === completedIdx + 1) return { ...node, unlocked: true }
+                return node
+              })
+            })(),
+            unlockedLessons: (() => {
+              const nodes = state.progress.pathNodes
+              const completedIdx = nodes.findIndex((n) => n.lessonId === result.lessonId)
+              const nextId = completedIdx >= 0 ? nodes[completedIdx + 1]?.lessonId : undefined
+              return Array.from(
+                new Set([...state.progress.unlockedLessons, result.lessonId, ...(nextId ? [nextId] : [])]),
+              )
+            })(),
+            currentMapPosition: (() => {
+              const nodes = state.progress.pathNodes
+              const completedIdx = nodes.findIndex((n) => n.lessonId === result.lessonId)
+              const nextNode = completedIdx >= 0 ? nodes[completedIdx + 1] : undefined
+              return nextNode
+                ? { unitId: nextNode.unitId, lessonId: nextNode.lessonId }
+                : state.progress.currentMapPosition
+            })(),
           })
 
           return {

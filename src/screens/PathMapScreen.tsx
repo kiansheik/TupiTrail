@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ScreenScaffold } from '@/components/layout/ScreenScaffold'
 import { Button } from '@/components/ui/Button'
@@ -9,16 +10,23 @@ import { useAppStore } from '@/store/useAppStore'
 
 export const PathMapScreen = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const progress = useAppStore((state) => state.progress)
 
-  const onNodeClick = (node: LessonMapNode) => {
-    if (!node.unlocked || node.type !== 'lesson') {
-      return
-    }
+  const simLevel = parseInt(searchParams.get('sim') ?? '', 10)
 
-    if (node.lessonId === 'unit1-lesson1') {
-      navigate('/lesson/unit1-lesson1/intro')
-    }
+  const nodes = useMemo<LessonMapNode[]>(() => {
+    if (!Number.isFinite(simLevel) || simLevel <= 0) return progress.pathNodes
+    return progress.pathNodes.map((node, index) => ({
+      ...node,
+      completed: index < simLevel,
+      unlocked: index <= simLevel,
+    }))
+  }, [progress.pathNodes, simLevel])
+
+  const onNodeClick = (node: LessonMapNode) => {
+    if (!node.unlocked || node.type !== 'lesson') return
+    navigate(`/lesson/${node.lessonId}/intro`)
   }
 
   return (
@@ -42,7 +50,7 @@ export const PathMapScreen = () => {
             <p className="font-display text-3xl text-ink">{progress.streak.current}</p>
           </div>
         </Card>
-        <PathMap nodes={progress.pathNodes} onNodeClick={onNodeClick} />
+        <PathMap nodes={nodes} onNodeClick={onNodeClick} />
       </div>
     </ScreenScaffold>
   )

@@ -60,10 +60,11 @@ const weekPoints = [
   { x: 274, y: 118, label: 'Sab' },
 ]
 
-const WeekArcIllustration = ({ compact = false, dense = false }: { compact?: boolean; dense?: boolean }) => (
+const WeekArcIllustration = () => (
   <svg
     viewBox="0 0 320 170"
-    className={cn('w-full', dense ? 'h-[66px]' : compact ? 'h-[86px]' : 'h-[136px]')}
+    className="w-full"
+    style={{ aspectRatio: '320 / 170' }}
     aria-hidden
   >
     <defs>
@@ -83,7 +84,7 @@ const WeekArcIllustration = ({ compact = false, dense = false }: { compact?: boo
           x={point.x}
           y={point.y + 24}
           textAnchor="middle"
-          fontSize={compact ? '10' : '11'}
+          fontSize="11"
           fontWeight="800"
           fill="#1b2b26"
         >
@@ -125,59 +126,33 @@ const pillars: Pillar[] = [
 ]
 
 type WeeklyImpactPanelProps = {
-  compact?: boolean
-  dense?: boolean
   className?: string
 }
 
-export const WeeklyImpactPanel = ({ compact = false, dense = false, className }: WeeklyImpactPanelProps) => {
+export const WeeklyImpactPanel = ({ className }: WeeklyImpactPanelProps) => {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        'rounded-[1.6rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#f0fbf7_0%,#fff7e7_100%)] p-4',
-        compact && 'flex min-h-0 flex-1 flex-col rounded-[1.3rem] p-2.5',
-        dense && 'rounded-[1.1rem] p-2',
+        'flex min-h-0 flex-1 flex-col rounded-[1.3rem] border-2 border-ink/20 bg-[linear-gradient(180deg,#f0fbf7_0%,#fff7e7_100%)] p-3',
         className,
       )}
     >
-      <div className={cn(compact ? '-mx-1' : '-mx-2')}>
-        <WeekArcIllustration compact={compact} dense={dense} />
+      <div className="-mx-1 min-h-0 shrink">
+        <WeekArcIllustration />
       </div>
 
-      <div
-        className={cn(
-          'mt-3 grid gap-2',
-          compact && 'mt-2 flex-1 gap-1.5',
-          dense && 'mt-1 grid-cols-3 gap-1',
-        )}
-      >
+      <div className="mt-2 grid min-h-0 flex-1 grid-cols-3 gap-2">
         {pillars.map((pillar) => (
           <article
             key={pillar.id}
-            className={cn(
-              'flex items-center gap-3 rounded-2xl border-2 border-ink/10 bg-white/90 p-3',
-              compact && 'gap-2 rounded-xl p-2',
-              dense && 'flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center',
-            )}
+            className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-ink/10 bg-white/90 px-1 py-2 text-center"
           >
-            <div className={cn('shrink-0', compact && 'scale-90', dense && 'scale-[0.68]')}>{pillar.icon}</div>
-            <div>
-              <h3 className={cn('text-base font-black text-ink', compact && 'text-sm', dense && 'text-[10px] leading-tight')}>
-                {pillar.title}
-              </h3>
-              <p
-                className={cn(
-                  'text-xs font-bold leading-snug text-ink/70',
-                  compact && 'text-[11px]',
-                  dense && 'hidden',
-                )}
-              >
-                {pillar.description}
-              </p>
-            </div>
+            <div className="scale-[0.72] shrink-0">{pillar.icon}</div>
+            <h3 className="text-[10px] font-black leading-tight text-ink">{pillar.title}</h3>
+            <p className="text-[9px] font-bold leading-tight text-ink/60">{pillar.description}</p>
           </article>
         ))}
       </div>

@@ -2,6 +2,8 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { AnalyticsTracker } from '@/lib/analytics/AnalyticsTracker'
 import { lessonById } from '@/data/course'
+import { LessonBuilderScreen } from '@/screens/LessonBuilderScreen'
+import { LessonBuilderEditorScreen } from '@/screens/LessonBuilderEditorScreen'
 import { ConfidenceScreen } from '@/screens/ConfidenceScreen'
 import { InstallPromptScreen } from '@/screens/InstallPromptScreen'
 import { IntroContinueScreen } from '@/screens/IntroContinueScreen'
@@ -63,6 +65,9 @@ export const AppRouter = () => {
         <Route path="/streak/goal" element={<StreakGoalScreen />} />
         <Route path="/install" element={<InstallPromptScreen />} />
         <Route path="/map" element={<PathMapScreen />} />
+
+        <Route path="/lessonbuilder" element={<LessonBuilderScreen />} />
+        <Route path="/lessonbuilder/:builderId" element={<LessonBuilderEditorScreen />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

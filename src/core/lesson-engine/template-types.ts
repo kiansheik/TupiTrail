@@ -6,8 +6,10 @@ import type {
 } from '@/core/lesson-engine/types'
 import type { LocalizedText } from '@/data/lexicon/types'
 
+export type TextInput = string | LocalizedText
+
 export type LocalizedRichTextSegment = {
-  text: LocalizedText
+  text: TextInput
   highlight?: 'new-word' | 'normal'
 }
 
@@ -42,41 +44,41 @@ type TemplateBaseExercise = {
 
 export type SelectImageExerciseTemplate = TemplateBaseExercise & {
   type: 'select_image'
-  prompt: LocalizedText
-  options: Array<Omit<SelectImageOption, 'label'> & { label: LocalizedText }>
+  prompt: TextInput
+  options: Array<Omit<SelectImageOption, 'label'> & { label: TextInput }>
   correctOptionId: string
 }
 
 export type TokenTranslateExerciseTemplate = TemplateBaseExercise & {
   type: 'token_translate'
   sourceText: LocalizedRichTextSegment[]
-  tokenBank: LocalizedText[]
-  correctSequence: LocalizedText[]
+  tokenBank: TextInput[]
+  correctSequence: TextInput[]
 }
 
 export type MultipleChoiceTranslationExerciseTemplate = TemplateBaseExercise & {
   type: 'multiple_choice_translation'
-  prompt: LocalizedText
-  choices: LocalizedText[]
-  correctChoice: LocalizedText
+  prompt: TextInput
+  choices: TextInput[]
+  correctChoice: TextInput
 }
 
 export type DialogueChoiceExerciseTemplate = TemplateBaseExercise & {
   type: 'dialogue_choice'
   dialogue: Array<{
     speaker: string
-    text?: LocalizedText
+    text?: TextInput
     isBlank?: boolean
   }>
-  choices: LocalizedText[]
-  correctChoice: LocalizedText
+  choices: TextInput[]
+  correctChoice: TextInput
   answerAudio?: LessonAudioSpec
 }
 
 export type ListeningTapExerciseTemplate = TemplateBaseExercise & {
   type: 'listening_tap'
-  tokenBank: LocalizedText[]
-  correctSequence: LocalizedText[]
+  tokenBank: TextInput[]
+  correctSequence: TextInput[]
 }
 
 export type ExerciseTemplate =

@@ -1,4 +1,4 @@
-.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map check-required-audio check-required-audio-strict
+.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map check-required-audio check-required-audio-strict import-lesson delete-lesson
 
 LEXICON_TARGET_LANG ?= en
 
@@ -11,6 +11,8 @@ help:
 	@echo "  make build"
 	@echo "  make test"
 	@echo "  make dev"
+	@echo "  make import-lesson ZIP=path/to/lesson.zip  # import a builder-exported lesson zip"
+	@echo "  make delete-lesson LESSON=unit1-my-lesson  # remove a lesson and all its assets"
 	@echo "  make generate-englishtotupi-map  # auto-generate en->tupi map keys from lesson data"
 	@echo "  make check-required-audio  # list required audio files and missing ones"
 	@echo "  make check-required-audio-strict  # fail if any required audio file is missing"
@@ -35,6 +37,20 @@ check-required-audio:
 
 check-required-audio-strict:
 	node scripts/check-required-audio.mjs --strict
+
+# ZIP= is required: make import-lesson ZIP=~/Downloads/unit1-lesson2.zip
+import-lesson:
+ifndef ZIP
+	$(error ZIP is required. Usage: make import-lesson ZIP=path/to/lesson.zip)
+endif
+	node scripts/import-lesson.mjs "$(ZIP)"
+
+# LESSON= is required: make delete-lesson LESSON=unit1-my-lesson
+delete-lesson:
+ifndef LESSON
+	$(error LESSON is required. Usage: make delete-lesson LESSON=unit1-my-lesson)
+endif
+	node scripts/delete-lesson.mjs "$(LESSON)"
 
 local-deploy:
 	npm run lint

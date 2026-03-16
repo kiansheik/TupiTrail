@@ -21,7 +21,7 @@ export const getExerciseHeaderMeta = (
   const dialogueHeaderText =
     exercise.type === 'dialogue_choice'
       ? exercise.dialogue.find(
-          (line) => line.speaker.trim().toLowerCase() === 'server' && !line.isBlank && Boolean(line.text),
+          (line) => ['server', 'garçom', 'garcom', 'atendente'].includes(line.speaker.trim().toLowerCase()) && !line.isBlank && Boolean(line.text),
         )?.text ?? null
       : null
 
