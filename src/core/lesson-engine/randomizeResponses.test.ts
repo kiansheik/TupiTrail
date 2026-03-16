@@ -46,7 +46,7 @@ describe('randomizeExerciseResponses', () => {
         id: 'd',
         type: 'dialogue_choice',
         instruction: 'dialogue',
-        dialogue: [{ speaker: 'Server', text: 'Tea or coffee?' }, { speaker: 'You', isBlank: true }],
+        dialogue: [{ speaker: 'Garçom', text: 'Tea or coffee?' }, { speaker: 'Você', isBlank: true }],
         choices: ['Tea, please.', 'Thank you.', 'Welcome!'],
         correctChoice: 'Tea, please.',
       },
