@@ -151,7 +151,7 @@ export const lesson1Template: LessonTemplateData = {
       choices: [pt('De nada'), pt('Bem-vindo'), pt('Obrigado')],
       correctChoice: pt('Bem-vindo'),
       audio: repoAudio('unit1/shared/normalized/welcome.mp3', { id: 'phrase-welcome' }),
-      meaning: 'Welcome',
+      meaning: 'Bem-vindo',
       xp: 8,
     },
     {
@@ -177,16 +177,14 @@ export const lesson1Template: LessonTemplateData = {
       correctChoice: pt('por favor'),
       meaning: 'Por favor',
       audio: repoAudio('unit1/shared/normalized/please.mp3', { id: 'phrase-please' }),
-      
       explanation: {
         incorrect: 'Use a expressão mais comum para pedidos educados.',
         grammarNotes: [
-
-        { label: 'nde', text: 'tua' },
-        { label: 'angaturama', text: 'gentileza' },
-        { label: 'resé', text: 'por' },
+          { label: 'nde', text: 'tua' },
+          { label: 'angaturama', text: 'gentileza' },
+          { label: 'resé', text: 'por' },
         ]
-  },
+      },
       xp: 8,
     },
     {
