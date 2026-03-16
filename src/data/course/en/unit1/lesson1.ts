@@ -134,7 +134,7 @@ export const lesson1Template: LessonTemplateData = {
           { label: '-ry', text: 'água extraída de' },
           { label: '-pe', text: 'partícula interrogativa; marca perguntas como "?"' },
           { label: 'konipó', text: 'ou' },
-          { label: "ka'ary", text: 'herva' },
+          { label: "ka'a", text: 'herva' },
         ],
       },
       meaning: 'café ou cha?',
