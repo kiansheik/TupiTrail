@@ -62,3 +62,8 @@ deploy-gh-pages:
 	fi
 	git push origin HEAD
 	npm run deploy:gh-pages -- -m "$(PAGES_MSG)"
+
+push:
+	git add .
+	git commit
+	git push origin HEAD
