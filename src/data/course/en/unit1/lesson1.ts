@@ -176,6 +176,7 @@ export const lesson1Template: LessonTemplateData = {
       choices: [pt('por tua gentileza'), pt('obrigado'), pt('de nada')],
       correctChoice: pt('por tua gentileza'),
       meaning: 'Por tua gentileza',
+      audio: repoAudio('unit1/shared/normalized/please.mp3', { id: 'phrase-please' }),
       xp: 8,
     },
     {
