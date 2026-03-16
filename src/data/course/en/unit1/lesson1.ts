@@ -190,7 +190,7 @@ export const lesson1Template: LessonTemplateData = {
     {
       id: 'ex8',
       type: 'dialogue_choice',
-      instruction: 'Complete o dialogo',
+      instruction: 'Complete o diálogo',
       character: { id: 'man', mood: 'encouraging' },
       audio: repoAudio('unit1/shared/normalized/tea-or-coffee.ogg', { id: 'phrase-tea-or-coffee' }),
       answerAudio: repoAudio('unit1/shared/normalized/tea-please.ogg', { id: 'phrase-tea-please' }),
@@ -220,7 +220,7 @@ export const lesson1Template: LessonTemplateData = {
       answerAudio: repoAudio('unit1/shared/normalized/i-want-coffee.ogg', { id: 'phrase-i-want-coffee' }),
       id: 'ex10',
       type: 'dialogue_choice',
-      instruction: 'Complete o dialogo',
+      instruction: 'Complete o diálogo',
       character: { id: 'bear', mood: 'neutral' },
       dialogue: [
         { speaker: 'Server', text: en('Tea or coffee?') },
@@ -258,7 +258,7 @@ export const lesson1Template: LessonTemplateData = {
     {
       id: 'ex13',
       type: 'dialogue_choice',
-      instruction: 'Complete o dialogo',
+      instruction: 'Complete o diálogo',
       character: { id: 'man', mood: 'thinking' },
       dialogue: [
         { speaker: 'Server', text: en('Coffee or tea?') },
