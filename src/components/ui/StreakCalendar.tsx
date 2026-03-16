@@ -1,6 +1,7 @@
 import { isoToday } from '@/lib/utils/time'
 
-const weekdayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+// Sunday-first week, Portuguese abbreviations
+const weekdayOrder = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export const StreakCalendar = ({ week }: { week: Record<string, boolean> }) => {
   const today = isoToday()
@@ -11,7 +12,8 @@ export const StreakCalendar = ({ week }: { week: Record<string, boolean> }) => {
       <div className="mt-3 grid grid-cols-7 gap-2">
         {weekdayOrder.map((label, index) => {
           const date = new Date()
-          const dayOffset = index - ((date.getDay() + 6) % 7)
+          // Sunday = 0 in getDay(), which aligns with index 0 (Dom)
+          const dayOffset = index - date.getDay()
           date.setDate(date.getDate() + dayOffset)
           const key = date.toISOString().slice(0, 10)
           const active = Boolean(week[key])
