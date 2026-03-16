@@ -173,10 +173,20 @@ export const lesson1Template: LessonTemplateData = {
       character: { id: 'nonbinary', mood: 'encouraging' },
       prompt: en('please'),
       promptSegments: [{ text: en('please'), highlight: 'new-word' }],
-      choices: [pt('por tua gentileza'), pt('obrigado'), pt('de nada')],
-      correctChoice: pt('por tua gentileza'),
-      meaning: 'Por tua gentileza',
+      choices: [pt('por favor'), pt('obrigado'), pt('de nada')],
+      correctChoice: pt('por favor'),
+      meaning: 'Por favor',
       audio: repoAudio('unit1/shared/normalized/please.mp3', { id: 'phrase-please' }),
+      
+      explanation: {
+        incorrect: 'Use a expressão mais comum para pedidos educados.',
+        grammarNotes: [
+
+        { label: 'nde', text: 'tua' },
+        { label: 'angaturama', text: 'gentileza' },
+        { label: 'resé', text: 'por' },
+        ]
+  },
       xp: 8,
     },
     {
@@ -192,7 +202,7 @@ export const lesson1Template: LessonTemplateData = {
       ],
       choices: [en('Tea, please.'), en('Welcome!'), en('Thank you!')],
       correctChoice: en('Tea, please.'),
-      meaning: 'Cha, por tua gentileza.',
+      meaning: 'Cha, por favor.',
       xp: 10,
     },
     {
