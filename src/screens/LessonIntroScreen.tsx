@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -10,13 +11,15 @@ import { useLessonSessionStore } from '@/store/useLessonSessionStore'
 export const LessonIntroScreen = () => {
   const navigate = useNavigate()
   const params = useParams<{ lessonId: string }>()
-  const lessonId = params.lessonId ?? 'unit1-lesson1'
-  const lesson = lessonById.get(lessonId) ?? lessonById.get('unit1-lesson1')
+  const lessonId = params.lessonId ?? ''
+  const lesson = lessonById.get(lessonId)
   const startLesson = useLessonSessionStore((state) => state.startLesson)
 
-  if (!lesson) {
-    return null
-  }
+  useEffect(() => {
+    if (!lesson) navigate('/map', { replace: true })
+  }, [lesson, navigate])
+
+  if (!lesson) return null
 
   const onContinue = () => {
     startLesson(lesson)

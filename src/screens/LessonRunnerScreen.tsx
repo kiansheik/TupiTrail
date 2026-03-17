@@ -257,8 +257,13 @@ export const LessonRunnerScreen = () => {
   }, [lesson, queueState, toResumeState, saveLessonResume, draftByExercise])
 
   const isHydratingFromResume = !lesson && Boolean(lessonResume && lessonResume.lessonId === lessonId)
+  // When phase is 'complete', currentExercise is null — the navigation effect is about to fire.
+  // Render nothing so we never flash the "Sessão indisponível" screen before navigating away.
+  const isTransitioningToComplete = Boolean(queueState?.phase === 'complete')
 
   if (!lesson || !queueState || !currentExercise || !renderedExercise) {
+    if (isTransitioningToComplete) return null
+
     return (
       <ScreenScaffold
         title={isHydratingFromResume ? 'Retomando sessão...' : 'Sessão indisponível'}

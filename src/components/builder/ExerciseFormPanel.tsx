@@ -1,6 +1,6 @@
 import { useRef, useMemo, useState, useEffect } from 'react'
 import { saveImageDataUrl, getImageDataUrl, deleteImageDataUrl } from '@/lib/builder/imageStorage'
-import { createAudioUrl } from '@/lib/builder/audioStorage'
+import { createAudioUrl, getAudioBlob, saveAudioBlob } from '@/lib/builder/audioStorage'
 
 // ─── Image resize utility ─────────────────────────────────────────────────────
 
@@ -136,6 +136,17 @@ const AudioSection = ({
     }
   }
 
+  const handleSaveAsWordAudio = async () => {
+    if (!wordBlobKey) return
+    const blob = await getAudioBlob(`${exId}-audio`)
+    if (!blob) return
+    await saveAudioBlob(wordBlobKey, blob)
+    setWordBlobExists(true)
+    onChange('audio', makeAudio(wordBlobKey))
+  }
+
+  const hasExerciseAudio = !usingWordAudio && !!audio?.blobKey
+
   return (
     <div className="space-y-2">
       <SectionTitle>Áudio</SectionTitle>
@@ -154,11 +165,22 @@ const AudioSection = ({
             <span className="text-xs font-bold text-success">✓ usando áudio da palavra "{wordKey}"</span>
           </div>
         ) : (
-          <AudioRecorder
-            blobKey={`${exId}-audio`}
-            label="Áudio principal"
-            onSaved={() => onChange('audio', makeAudio(`${exId}-audio`))}
-          />
+          <>
+            <AudioRecorder
+              blobKey={`${exId}-audio`}
+              label="Áudio principal"
+              onSaved={() => onChange('audio', makeAudio(`${exId}-audio`))}
+            />
+            {wordKey && hasExerciseAudio && (
+              <button
+                type="button"
+                onClick={handleSaveAsWordAudio}
+                className="w-full rounded-xl border border-dashed border-primary/40 py-1.5 text-xs font-black text-primary/70 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
+              >
+                Salvar como áudio de "{wordKey}"
+              </button>
+            )}
+          </>
         )}
         {showSlow && (
           <AudioRecorder

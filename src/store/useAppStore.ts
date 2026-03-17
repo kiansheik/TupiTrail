@@ -5,7 +5,7 @@ import type { LessonResult } from '@/core/lesson-engine/types'
 import { pathNodesSeed } from '@/data/course'
 import { getCookie, setCookie } from '@/lib/storage/cookie'
 import { isoToday, nowIso } from '@/lib/utils/time'
-import { APP_STORE_VERSION, migrateAppStore } from '@/store/migrations'
+import { APP_STORE_VERSION, migrateAppStore, rebuildPathNodes } from '@/store/migrations'
 
 export type AppProfile = {
   visitorId: string
@@ -286,6 +286,14 @@ export const useAppStore = create<AppState>()(
         onboardingCompleted: state.onboardingCompleted,
         lessonResume: state.lessonResume,
       }),
+      // Always sync pathNodes with the current seed on hydration so stale
+      // nodes (e.g. from old lessonIds) are replaced without a version bump.
+      onRehydrateStorage: () => (state) => {
+        if (!state?.progress?.pathNodes) return
+        state.progress.pathNodes = rebuildPathNodes(
+          state.progress.pathNodes as Array<Record<string, unknown>>,
+        )
+      },
     },
   ),
 )

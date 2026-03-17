@@ -14,6 +14,11 @@ export const courseEn: CourseData = {
       title: 'Unit 1: Drinks & Polite Words',
       lessons: [lesson1],
     },
+    {
+      id: 'unit2',
+      title: 'Unit 2: Lição 2',
+      lessons: [],
+    },
   ],
 }
 

@@ -193,20 +193,37 @@ if (alreadyImported) {
   ok('Added import + materializeLesson call')
 }
 
-// 5c. Add to the correct unit's lessons array
+// 5c. Add to the correct unit's lessons array (create the unit if it doesn't exist)
 {
-  // Find the unit object block by its id field
   const unitMarker = `id: '${unitId}'`
   const markerIdx = src.indexOf(unitMarker)
 
   if (markerIdx === -1) {
-    warn(`Unit '${unitId}' not found in course.ts — add '${lessonVar}' to the lessons array manually.`)
+    // Unit doesn't exist — create it inside the units: [...] array
+    const unitsMarker = 'units: ['
+    const unitsIdx = src.indexOf(unitsMarker)
+    if (unitsIdx === -1) {
+      warn(`Could not find 'units: [' in course.ts — add unit '${unitId}' manually.`)
+    } else {
+      // Bracket-count to find closing ] of units array
+      let depth = 0
+      let pos = unitsIdx + unitsMarker.length - 1  // start at [
+      while (pos < src.length) {
+        if (src[pos] === '[') depth++
+        else if (src[pos] === ']') { depth--; if (depth === 0) break }
+        pos++
+      }
+      // Derive a human-readable title from unitId (e.g. unit2 → "Unit 2")
+      const unitTitle = unitId.replace(/^unit(\d+)$/i, (_, n) => `Unit ${n}`)
+      const newUnitBlock = `    {\n      id: '${unitId}',\n      title: '${unitTitle}',\n      lessons: [${lessonVar}],\n    },\n`
+      src = src.slice(0, pos) + newUnitBlock + src.slice(pos)
+      ok(`Created unit '${unitId}' in courseEn with '${lessonVar}'`)
+    }
   } else {
-    // Walk back to the opening { of the unit object
+    // Unit exists — walk back to { and forward to } to get the unit object block
     let objStart = markerIdx
     while (objStart > 0 && src[objStart] !== '{') objStart--
 
-    // Walk forward counting braces to find the closing } of the unit object
     let depth = 0
     let objEnd = objStart
     while (objEnd < src.length) {
@@ -220,8 +237,6 @@ if (alreadyImported) {
     if (unitBlock.includes(lessonVar)) {
       warn(`Unit '${unitId}' lessons array already contains '${lessonVar}' — skipping.`)
     } else {
-      // Find lessons: [ ... ] within the unit block and insert before the closing ]
-      // Handles both inline `lessons: [a, b]` and multi-line formats
       const patched = unitBlock.replace(/(lessons:\s*\[)([\s\S]*?)(\])/,
         (_, open, inner, close) => {
           const trimmed = inner.trimEnd()
@@ -235,6 +250,7 @@ if (alreadyImported) {
 }
 
 // 5d. Add to pathNodesSeed (append a new node before the closing ] of pathNodesSeed)
+let addedPathNode = false
 if (src.includes(`lessonId: '${lessonId}'`)) {
   warn(`pathNodesSeed already has a node for '${lessonId}' — skipping.`)
 } else {
@@ -263,11 +279,31 @@ if (src.includes(`lessonId: '${lessonId}'`)) {
   src = src.replace(/(export const pathNodesSeed[^=]*=\s*\[)([\s\S]*?)(\n\])/,
     (_, open, body, close) => `${open}${body}\n${nodeBlock}${close}`)
   ok(`Added node-${nextNodeNum} to pathNodesSeed (y=${newY})`)
+  addedPathNode = true
 }
 
 writeFileSync(courseTsPath, src)
 
-// ─── 6. Clean up temp dir ─────────────────────────────────────────────────────
+// ─── 6. Bump APP_STORE_VERSION so browsers re-run the path migration ───────────
+
+if (addedPathNode) {
+  step('6. Bumping APP_STORE_VERSION…')
+  const migrationsTsPath = resolve(projectRoot, 'src/store/migrations.ts')
+  let migSrc = readFileSync(migrationsTsPath, 'utf8')
+  const versionMatch = migSrc.match(/APP_STORE_VERSION = (\d+)/)
+  if (versionMatch) {
+    const nextVersion = parseInt(versionMatch[1]) + 1
+    migSrc = migSrc
+      .replace(/APP_STORE_VERSION = \d+/, `APP_STORE_VERSION = ${nextVersion}`)
+      .replace(/if \(version < \d+\)/, `if (version < ${nextVersion})`)
+    writeFileSync(migrationsTsPath, migSrc)
+    ok(`APP_STORE_VERSION → ${nextVersion}`)
+  } else {
+    warn('Could not parse APP_STORE_VERSION — bump it manually in src/store/migrations.ts')
+  }
+}
+
+// ─── 7. Clean up temp dir ─────────────────────────────────────────────────────
 
 rmSync(tmpDir, { recursive: true, force: true })
 

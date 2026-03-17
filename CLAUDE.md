@@ -16,6 +16,7 @@ npx vitest run src/core/lesson-engine/session.test.ts
 
 # Lesson builder workflow
 make import-lesson ZIP=path/to/export.zip   # Import builder ZIP into course data
+make delete-lesson LESSON=unit1-my-lesson   # Remove lesson + its assets from course data
 
 # Audio validation
 make check-required-audio        # List missing audio files
@@ -35,8 +36,8 @@ make deploy-gh-pages             # Full pipeline: lint → build → test → gh
 - `combo.ts`, `xp.ts`, `progress.ts` — Gamification metrics
 
 **Data** (`src/data/`) — Content and materialization layer.
-- `course/en/course.ts` — Master course definition: `lessons` array + `pathNodesSeed` (map nodes)
-- `course/en/unit1/lessonN.ts` — Lesson files typed as `LessonTemplateData` (not `LessonData`)
+- `course/en/course.ts` — Master course definition: `lessons` array + `pathNodesSeed` (map nodes) + `lessonById` lookup Map
+- `course/en/unitN/lessonN.ts` — Lesson files typed as `LessonTemplateData` (not `LessonData`)
 - `lexicon/materializeLesson.ts` — Converts `LessonTemplateData → LessonData`, resolving `LocalizedText` via `resolveText()`
 - `lexicon/helpers.ts` — `enText()`, `ptBrText()`, `tupiText()` constructors
 - Build-time lang target via `VITE_LEXICON_TARGET_LANG` env var
@@ -44,7 +45,8 @@ make deploy-gh-pages             # Full pipeline: lint → build → test → gh
 **App** (`src/app/`, `src/screens/`, `src/components/`, `src/store/`) — React + Zustand layer.
 - `store/useAppStore.ts` — Persisted to localStorage: profile, progress, `pathNodes`, lesson resume state
 - `store/useLessonSessionStore.ts` — In-memory active lesson session
-- `store/migrations.ts` — Versioned store migrations (currently v2); v1→v2 smart-merges `pathNodes` (patches type/position, preserves unlock/completion state)
+- `store/migrations.ts` — Versioned store migrations (currently v5); `rebuildPathNodes` merges seed with saved state (preserves unlock/completion, drops stale nodes)
+- `onRehydrateStorage` in `useAppStore` always re-syncs `pathNodes` with the seed on hydration — new lessons appear without a version bump
 - `app/router.tsx` — HashRouter (GitHub Pages); all lesson routes use `/lesson/:lessonId/...`
 
 ## Key Concepts
@@ -57,7 +59,10 @@ make deploy-gh-pages             # Full pipeline: lint → build → test → gh
 **LocalizedText** is `{ value: string; lang: LanguageTag; key?: string }` — not a string union. Use `resolveText()` (not `resolveLocalizedText()`) when the field might be a plain string.
 
 **Adding a new lesson**
-Use `make import-lesson ZIP=...` — the script (`scripts/import-lesson.mjs`) fully automates patching `course.ts` (import, materializeLesson array, `lessons` array, `pathNodesSeed` node). Manual edits are only needed for custom node positions.
+Use `make import-lesson ZIP=...` — the script (`scripts/import-lesson.mjs`) fully automates patching `course.ts` (import, materializeLesson, `lessons` array, `pathNodesSeed` node). If the unit doesn't exist yet, the script creates it automatically. It also bumps `APP_STORE_VERSION` in `migrations.ts` when adding a new pathNode. Manual edits are only needed for custom node positions.
+
+**Deleting a lesson**
+Use `make delete-lesson LESSON=unit1-my-lesson` — removes the lesson file, its audio assets, and patches `course.ts` to remove the import, materialize call, lessons array entry, and pathNodesSeed node.
 
 **Map unlock flow**
 `applyLessonResult()` in `useAppStore` dynamically unlocks the next `pathNodes` entry after the completed one — no hardcoding of lesson IDs.
@@ -68,7 +73,12 @@ Images uploaded in the lesson builder are stored in IndexedDB (not localStorage)
 **Audio**
 - `audio.mode === 'file'` → static file path (must exist in `public/audio/`)
 - `audio.mode === 'recorded'` → builder-recorded blob in IndexedDB, exported to `audio/` folder in ZIP
+- Word-level audio: keyed as `_word_${normalizedWord}` in IndexedDB; builder shows checkbox to reuse existing word audio
 - Web Speech API TTS is used as fallback when no audio spec is provided
+
+**PathMap and units**
+- `PathMap` component cycles through `UNIT_PALETTES` (5 color palettes) based on `unitId` trailing number
+- `LessonIntroScreen` redirects to `/map` (via `useEffect`) for unknown/stale `lessonId`s — never silently falls back to a different lesson
 
 ## Routing
 
