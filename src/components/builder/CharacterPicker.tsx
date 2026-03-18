@@ -22,13 +22,13 @@ export const CharacterPicker = ({ characterId, mood = 'neutral', onChange }: Pro
     <div className="space-y-3 rounded-xl border border-ink/15 bg-white p-3">
       <p className="text-xs font-black uppercase tracking-wide text-ink/50">Personagem</p>
 
-      {/* Character row */}
-      <div className="flex gap-2">
+      {/* Character row — horizontal scroll for overflow */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
         {/* None option */}
         <button
           type="button"
           onClick={() => onChange(undefined, mood)}
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl border-2 text-lg transition ${
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 text-lg transition ${
             !characterId ? 'border-primaryDark bg-primary/15' : 'border-ink/15 bg-shell hover:border-primary/40'
           }`}
           title="Sem personagem"
@@ -40,7 +40,7 @@ export const CharacterPicker = ({ characterId, mood = 'neutral', onChange }: Pro
             key={id}
             type="button"
             onClick={() => onChange(id, mood)}
-            className={`rounded-2xl border-2 transition ${
+            className={`shrink-0 rounded-2xl border-2 transition ${
               characterId === id ? 'border-primaryDark bg-primary/15' : 'border-ink/15 hover:border-primary/40'
             }`}
           >

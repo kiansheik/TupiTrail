@@ -1,0 +1,11 @@
+{
+  "units": [
+    {
+      "id": "unit1",
+      "title": "Unit 1: Drinks & Polite Words"
+    }
+  ],
+  "lessons": [
+    "unit1/lesson1"
+  ]
+}

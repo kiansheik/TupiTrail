@@ -243,6 +243,7 @@ export async function exportLessonZip(lesson: BuilderLesson): Promise<void> {
 
   const zipEntries: ZipEntry[] = [
     { name: `${lesson.id}.ts`, data: enc.encode(tsCode) },
+    { name: 'lesson.json', data: enc.encode(JSON.stringify(lesson, null, 2)) },
     { name: 'README.md', data: enc.encode(readme) },
     ...audioEntries,
     ...imageEntries,

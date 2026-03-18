@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { exportLessonZip } from '@/lib/builder/exportLesson'
+import { importLessonZip } from '@/lib/builder/importLesson'
 import {
   deleteBuilderLesson,
   duplicateBuilderLesson,
@@ -43,6 +44,8 @@ export const LessonBuilderScreen = () => {
 
   useEffect(() => { migrateImagesToIndexedDB() }, [])
   const [exporting, setExporting] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   const refresh = () => setLessons(listBuilderLessons())
@@ -68,6 +71,28 @@ export const LessonBuilderScreen = () => {
     }
   }
 
+  const handleImportZip = async () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.zip'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      setImporting(true)
+      setImportError(null)
+      try {
+        const lesson = await importLessonZip(file)
+        refresh()
+        navigate(`/lessonbuilder/${lesson.builderId}`)
+      } catch (err) {
+        setImportError(err instanceof Error ? err.message : 'Erro ao importar ZIP')
+      } finally {
+        setImporting(false)
+      }
+    }
+    input.click()
+  }
+
   const handleExport = async (lesson: BuilderLesson) => {
     setExporting(lesson.builderId)
     try {
@@ -91,15 +116,32 @@ export const LessonBuilderScreen = () => {
       </div>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-4">
-        {/* New lesson button */}
-        <motion.button
-          type="button"
-          onClick={handleNew}
-          whileTap={{ scale: 0.97 }}
-          className="mb-5 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/50 bg-primary/5 py-4 text-base font-black text-primary transition hover:bg-primary/10"
-        >
-          <span className="text-2xl leading-none">+</span> Nova Lição
-        </motion.button>
+        {/* New / Import buttons */}
+        <div className="mb-5 flex gap-3">
+          <motion.button
+            type="button"
+            onClick={handleNew}
+            whileTap={{ scale: 0.97 }}
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/50 bg-primary/5 py-4 text-base font-black text-primary transition hover:bg-primary/10"
+          >
+            <span className="text-2xl leading-none">+</span> Nova Lição
+          </motion.button>
+          <motion.button
+            type="button"
+            onClick={handleImportZip}
+            disabled={importing}
+            whileTap={{ scale: 0.97 }}
+            className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-accent/50 bg-accent/5 px-5 py-4 text-base font-black text-accent transition hover:bg-accent/10 disabled:opacity-50"
+          >
+            {importing ? '⏳' : '⬆'} Importar .zip
+          </motion.button>
+        </div>
+
+        {importError && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
+            {importError}
+          </div>
+        )}
 
         {lessons.length === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">

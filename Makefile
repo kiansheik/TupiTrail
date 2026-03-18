@@ -1,4 +1,4 @@
-.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map check-required-audio check-required-audio-strict import-lesson delete-lesson
+.PHONY: help lint build test dev local-deploy deploy-gh-pages generate-englishtotupi-map check-required-audio check-required-audio-strict import-lesson export-lesson delete-lesson generate-course
 
 LEXICON_TARGET_LANG ?= en
 
@@ -12,7 +12,9 @@ help:
 	@echo "  make test"
 	@echo "  make dev"
 	@echo "  make import-lesson ZIP=path/to/lesson.zip  # import a builder-exported lesson zip"
+	@echo "  make export-lesson LESSON=unit1-tembi-u [OUT_DIR=./exports]  # export lesson to .zip"
 	@echo "  make delete-lesson LESSON=unit1-my-lesson  # remove a lesson and all its assets"
+	@echo "  make generate-course  # regenerate course.ts from manifest.json"
 	@echo "  make generate-englishtotupi-map  # auto-generate en->tupi map keys from lesson data"
 	@echo "  make check-required-audio  # list required audio files and missing ones"
 	@echo "  make check-required-audio-strict  # fail if any required audio file is missing"
@@ -38,12 +40,25 @@ check-required-audio:
 check-required-audio-strict:
 	node scripts/check-required-audio.mjs --strict
 
+generate-course:
+	node scripts/generate-course.mjs
+
 # ZIP= is required: make import-lesson ZIP=~/Downloads/unit1-lesson2.zip
 import-lesson:
 ifndef ZIP
 	$(error ZIP is required. Usage: make import-lesson ZIP=path/to/lesson.zip)
 endif
 	node scripts/import-lesson.mjs "$(ZIP)"
+
+OUT_DIR ?= ./exports
+
+# LESSON= is required: make export-lesson LESSON=unit1-tembi-u [OUT_DIR=./exports]
+export-lesson:
+ifndef LESSON
+	$(error LESSON is required. Usage: make export-lesson LESSON=unit1-tembi-u [OUT_DIR=./exports])
+endif
+	@mkdir -p "$(OUT_DIR)"
+	node scripts/export-lesson.mjs "$(LESSON)" --out-dir "$(OUT_DIR)"
 
 # LESSON= is required: make delete-lesson LESSON=unit1-my-lesson
 delete-lesson:

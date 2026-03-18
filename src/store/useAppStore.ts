@@ -286,13 +286,21 @@ export const useAppStore = create<AppState>()(
         onboardingCompleted: state.onboardingCompleted,
         lessonResume: state.lessonResume,
       }),
-      // Always sync pathNodes with the current seed on hydration so stale
-      // nodes (e.g. from old lessonIds) are replaced without a version bump.
-      onRehydrateStorage: () => (state) => {
-        if (!state?.progress?.pathNodes) return
-        state.progress.pathNodes = rebuildPathNodes(
-          state.progress.pathNodes as Array<Record<string, unknown>>,
-        )
+      // Custom merge: always rebuild pathNodes from the current seed so
+      // new/removed lessons appear without clearing localStorage.
+      // This runs inline during hydration (not as a post-hoc callback),
+      // so the very first render already has the correct nodes.
+      merge: (persisted, current) => {
+        const p = persisted as Partial<typeof current> | undefined
+        const merged = { ...current, ...p }
+        const existingNodes = (merged.progress?.pathNodes ?? []) as Array<Record<string, unknown>>
+        return {
+          ...merged,
+          progress: {
+            ...merged.progress,
+            pathNodes: rebuildPathNodes(existingNodes),
+          },
+        }
       },
     },
   ),

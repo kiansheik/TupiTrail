@@ -8,7 +8,7 @@ import { LessonPreview } from '@/components/builder/LessonPreview'
 import { exportLessonZip } from '@/lib/builder/exportLesson'
 import { getBuilderLesson, listBuilderLessons, saveBuilderLesson, titleToLessonId } from '@/lib/builder/builderStorage'
 import type { BuilderExercise, BuilderLesson, ExerciseType } from '@/lib/builder/builderTypes'
-import { collectBuilderVocab, collectEngineVocab, mergeVocab } from '@/lib/builder/vocabCollector'
+import { collectBuilderVocab, collectBuilderGrammarNotes, collectEngineVocab, collectEngineGrammarNotes, mergeVocab, mergeGrammarNotes } from '@/lib/builder/vocabCollector'
 import { lessonById } from '@/data/course'
 
 // ─── New exercise factory ─────────────────────────────────────────────────────
@@ -136,6 +136,7 @@ const ExerciseRow = ({
   onMove,
   onDelete,
   vocab,
+  grammarNotes,
 }: {
   ex: BuilderExercise
   index: number
@@ -146,6 +147,7 @@ const ExerciseRow = ({
   onMove: (dir: -1 | 1) => void
   onDelete: () => void
   vocab?: string[]
+  grammarNotes?: Array<{ label: string; text: string }>
 }) => {
   return (
     <div className="rounded-2xl border-2 border-ink/10 bg-white">
@@ -221,7 +223,7 @@ const ExerciseRow = ({
             className="overflow-hidden"
           >
             <div className="border-t border-ink/10 px-3 py-3">
-              <ExerciseFormPanel exercise={ex} onChange={onChange} vocab={vocab} />
+              <ExerciseFormPanel exercise={ex} onChange={onChange} vocab={vocab} grammarNotes={grammarNotes} />
             </div>
           </motion.div>
         )}
@@ -260,6 +262,23 @@ export const LessonBuilderEditorScreen = () => {
   const vocab = useMemo(
     () => mergeVocab(collectBuilderVocab(lesson?.exercises ?? []), new Set(seedVocab)),
     [lesson?.exercises, seedVocab],
+  )
+
+  // Grammar notes pool: all notes from all builder lessons + engine lessons
+  const [seedGrammarNotes] = useState(() => {
+    const otherExercises = listBuilderLessons()
+      .filter((l) => l.builderId !== builderId)
+      .flatMap((l) => l.exercises)
+    const lesson1 = lessonById.get('unit1-lesson1')
+    return mergeGrammarNotes(
+      collectBuilderGrammarNotes(otherExercises),
+      collectEngineGrammarNotes(lesson1?.exercises ?? []),
+    )
+  })
+
+  const grammarNotes = useMemo(
+    () => mergeGrammarNotes(collectBuilderGrammarNotes(lesson?.exercises ?? []), seedGrammarNotes),
+    [lesson?.exercises, seedGrammarNotes],
   )
 
   useEffect(() => {
@@ -495,6 +514,7 @@ export const LessonBuilderEditorScreen = () => {
                 onMove={(dir) => moveExercise(i, dir)}
                 onDelete={() => deleteExercise(i)}
                 vocab={vocab}
+                grammarNotes={grammarNotes}
               />
             ))}
           </div>

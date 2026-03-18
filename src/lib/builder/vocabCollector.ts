@@ -98,6 +98,54 @@ export function collectEngineVocab(exercises: Exercise[]): Set<string> {
   return vocab
 }
 
+// ─── Collect grammar notes from builder exercises ─────────────────────────────
+
+export type GrammarNoteEntry = { label: string; text: string }
+
+export function collectBuilderGrammarNotes(exercises: BuilderExercise[]): GrammarNoteEntry[] {
+  const seen = new Map<string, string>() // label (lowercased) → text
+  for (const ex of exercises) {
+    for (const note of ex.explanation?.grammarNotes ?? []) {
+      const key = note.label.trim().toLowerCase()
+      if (key && !seen.has(key)) {
+        seen.set(key, note.text.trim())
+      }
+    }
+  }
+  return Array.from(seen, ([, text], i) => ({
+    label: Array.from(seen.keys())[i],
+    text,
+  })).sort((a, b) => a.label.localeCompare(b.label))
+}
+
+export function collectEngineGrammarNotes(exercises: Exercise[]): GrammarNoteEntry[] {
+  const seen = new Map<string, string>()
+  for (const ex of exercises) {
+    for (const note of ex.explanation?.grammarNotes ?? []) {
+      const key = note.label.trim().toLowerCase()
+      if (key && !seen.has(key)) {
+        seen.set(key, note.text.trim())
+      }
+    }
+  }
+  return Array.from(seen, ([, text], i) => ({
+    label: Array.from(seen.keys())[i],
+    text,
+  })).sort((a, b) => a.label.localeCompare(b.label))
+}
+
+export function mergeGrammarNotes(...noteSets: GrammarNoteEntry[][]): GrammarNoteEntry[] {
+  const seen = new Map<string, string>()
+  for (const set of noteSets) {
+    for (const note of set) {
+      const key = note.label.toLowerCase()
+      if (!seen.has(key)) seen.set(key, note.text)
+    }
+  }
+  return Array.from(seen, ([label, text]) => ({ label, text }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+}
+
 // ─── Merge multiple vocab sets into a sorted array ────────────────────────────
 
 export function mergeVocab(...sets: Set<string>[]): string[] {

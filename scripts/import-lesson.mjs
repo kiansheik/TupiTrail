@@ -9,15 +9,14 @@
  *   node scripts/import-lesson.mjs <path/to/lesson.zip>
  *   make import-lesson ZIP=~/Downloads/unit1-lesson2.zip
  *
- * What it does automatically:
+ * What it does:
  *   1. Extracts the zip
  *   2. Copies the .ts lesson file → src/data/course/en/{unitId}/{lessonId}.ts
  *   3. Copies audio files         → public/audio/{lessonId}/
- *   4. Patches course.ts          → adds import + materializeLesson call
- *
- * What it prints as a manual step:
- *   - The exact line to add to the lessons array in course.ts
- *   - The path node block to add to pathNodesSeed
+ *   4. Copies image files          → public/images/{lessonId}/
+ *   5. Adds lesson to manifest.json
+ *   6. Regenerates course.ts from manifest
+ *   7. Bumps APP_STORE_VERSION
  */
 
 import { execSync } from 'child_process'
@@ -33,6 +32,7 @@ import {
 import { resolve, dirname } from 'path'
 import { tmpdir } from 'os'
 import { fileURLToPath } from 'url'
+import { generateCourse } from './generate-course.mjs'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -42,7 +42,6 @@ const GREEN  = '\x1b[32m'
 const YELLOW = '\x1b[33m'
 const CYAN   = '\x1b[36m'
 const RED    = '\x1b[31m'
-
 
 const ok   = (msg) => console.log(`${GREEN}✓${RESET} ${msg}`)
 const warn = (msg) => console.log(`${YELLOW}⚠${RESET}  ${msg}`)
@@ -103,19 +102,8 @@ if (!unitIdMatch) {
 }
 const unitId = unitIdMatch[1]
 
-// Extract exported variable name
-const varNameMatch = tsContent.match(/export const (\w+)/)
-if (!varNameMatch) {
-  err('Could not find export in lesson file.')
-  process.exit(1)
-}
-const templateVar = varNameMatch[1]
-// Derive a clean lesson variable (strip _template suffix)
-const lessonVar   = templateVar.replace(/_template$/, '')
-
 info(`Lesson ID  : ${lessonId}`)
 info(`Unit ID    : ${unitId}`)
-info(`Export var : ${templateVar}`)
 
 // ─── 3. Copy .ts file ─────────────────────────────────────────────────────────
 
@@ -128,9 +116,9 @@ const destTs = resolve(unitDir, tsFileName)
 copyFileSync(resolve(tmpDir, tsFileName), destTs)
 ok(`src/data/course/en/${unitId}/${tsFileName}`)
 
-// ─── 4. Copy audio files ──────────────────────────────────────────────────────
+// ─── 4. Copy audio & image files ─────────────────────────────────────────────
 
-step('4. Copying audio files…')
+step('4. Copying audio & image files…')
 
 const audioSrcDir = resolve(tmpDir, 'audio')
 if (existsSync(audioSrcDir)) {
@@ -145,8 +133,6 @@ if (existsSync(audioSrcDir)) {
   info('No audio/ folder in zip — skipping.')
 }
 
-// ─── 4b. Copy image files ─────────────────────────────────────────────────────
-
 const imageSrcDir = resolve(tmpDir, 'images')
 if (existsSync(imageSrcDir)) {
   const imageDestDir = resolve(projectRoot, 'public/images', lessonId)
@@ -158,153 +144,59 @@ if (existsSync(imageSrcDir)) {
   ok(`public/images/${lessonId}/ (${imageFiles.length} file${imageFiles.length !== 1 ? 's' : ''})`)
 }
 
-// ─── 5. Patch course.ts ───────────────────────────────────────────────────────
+// ─── 5. Update manifest.json ─────────────────────────────────────────────────
 
-step('5. Patching src/data/course/en/course.ts…')
+step('5. Updating manifest.json…')
 
-const courseTsPath = resolve(projectRoot, 'src/data/course/en/course.ts')
-let src = readFileSync(courseTsPath, 'utf8')
+const manifestPath = resolve(projectRoot, 'src/data/course/en/manifest.json')
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 
-const alreadyImported = src.includes(templateVar)
+const lessonPath = `${unitId}/${lessonId}`
 
-if (alreadyImported) {
-  warn(`course.ts already references '${templateVar}' — skipping import/materialize patch.`)
+if (manifest.lessons.includes(lessonPath)) {
+  warn(`Manifest already contains '${lessonPath}' — will regenerate course.ts with updated file.`)
 } else {
-  // 5a. Insert import after the last import line
-  const importLine = `import { ${templateVar} } from '@/data/course/en/${unitId}/${lessonId}'`
-  const lastImportMatch = [...src.matchAll(/^import .+from .+$/gm)].at(-1)
-  if (lastImportMatch) {
-    const insertAt = lastImportMatch.index + lastImportMatch[0].length
-    src = src.slice(0, insertAt) + '\n' + importLine + src.slice(insertAt)
-  } else {
-    src = importLine + '\n' + src
-  }
-
-  // 5b. Insert materializeLesson call after the last such call
-  const matLine = `const ${lessonVar} = materializeLesson(${templateVar})`
-  const lastMatMatch = [...src.matchAll(/^const \w+ = materializeLesson\(.+\)$/gm)].at(-1)
-  if (lastMatMatch) {
-    const insertAt = lastMatMatch.index + lastMatMatch[0].length
-    src = src.slice(0, insertAt) + '\n' + matLine + src.slice(insertAt)
-  } else {
-    src = src.replace('export const courseEn', `${matLine}\nexport const courseEn`)
-  }
-
-  ok('Added import + materializeLesson call')
+  manifest.lessons.push(lessonPath)
+  ok(`Added '${lessonPath}' to lessons`)
 }
 
-// 5c. Add to the correct unit's lessons array (create the unit if it doesn't exist)
-{
-  const unitMarker = `id: '${unitId}'`
-  const markerIdx = src.indexOf(unitMarker)
-
-  if (markerIdx === -1) {
-    // Unit doesn't exist — create it inside the units: [...] array
-    const unitsMarker = 'units: ['
-    const unitsIdx = src.indexOf(unitsMarker)
-    if (unitsIdx === -1) {
-      warn(`Could not find 'units: [' in course.ts — add unit '${unitId}' manually.`)
-    } else {
-      // Bracket-count to find closing ] of units array
-      let depth = 0
-      let pos = unitsIdx + unitsMarker.length - 1  // start at [
-      while (pos < src.length) {
-        if (src[pos] === '[') depth++
-        else if (src[pos] === ']') { depth--; if (depth === 0) break }
-        pos++
-      }
-      // Derive a human-readable title from unitId (e.g. unit2 → "Unit 2")
-      const unitTitle = unitId.replace(/^unit(\d+)$/i, (_, n) => `Unit ${n}`)
-      const newUnitBlock = `    {\n      id: '${unitId}',\n      title: '${unitTitle}',\n      lessons: [${lessonVar}],\n    },\n`
-      src = src.slice(0, pos) + newUnitBlock + src.slice(pos)
-      ok(`Created unit '${unitId}' in courseEn with '${lessonVar}'`)
-    }
-  } else {
-    // Unit exists — walk back to { and forward to } to get the unit object block
-    let objStart = markerIdx
-    while (objStart > 0 && src[objStart] !== '{') objStart--
-
-    let depth = 0
-    let objEnd = objStart
-    while (objEnd < src.length) {
-      if (src[objEnd] === '{') depth++
-      else if (src[objEnd] === '}') { depth--; if (depth === 0) break }
-      objEnd++
-    }
-
-    const unitBlock = src.slice(objStart, objEnd + 1)
-
-    if (unitBlock.includes(lessonVar)) {
-      warn(`Unit '${unitId}' lessons array already contains '${lessonVar}' — skipping.`)
-    } else {
-      const patched = unitBlock.replace(/(lessons:\s*\[)([\s\S]*?)(\])/,
-        (_, open, inner, close) => {
-          const trimmed = inner.trimEnd()
-          const sep = trimmed.endsWith(',') ? '' : (trimmed.length ? ',' : '')
-          return `${open}${trimmed}${sep} ${lessonVar}${close}`
-        })
-      src = src.slice(0, objStart) + patched + src.slice(objEnd + 1)
-      ok(`Added '${lessonVar}' to unit '${unitId}' lessons array`)
-    }
-  }
+// Add unit if new
+if (!manifest.units.some((u) => u.id === unitId)) {
+  const unitTitle = unitId.replace(/^unit(\d+)$/i, (_, n) => `Unit ${n}`)
+  manifest.units.push({ id: unitId, title: unitTitle })
+  ok(`Added unit '${unitId}' (title: '${unitTitle}')`)
+  info(`To change the unit title, edit manifest.json and run: make generate-course`)
 }
 
-// 5d. Add to pathNodesSeed (append a new node before the closing ] of pathNodesSeed)
-let addedPathNode = false
-if (src.includes(`lessonId: '${lessonId}'`)) {
-  warn(`pathNodesSeed already has a node for '${lessonId}' — skipping.`)
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
+
+// ─── 6. Generate course.ts ───────────────────────────────────────────────────
+
+step('6. Generating course.ts…')
+
+const result = generateCourse()
+ok(`Generated — ${result.lessons.length} lesson(s), ${result.unitOrder.length} unit(s)`)
+
+// ─── 7. Bump APP_STORE_VERSION ───────────────────────────────────────────────
+
+step('7. Bumping APP_STORE_VERSION…')
+
+const migrationsTsPath = resolve(projectRoot, 'src/store/migrations.ts')
+let migSrc = readFileSync(migrationsTsPath, 'utf8')
+const versionMatch = migSrc.match(/APP_STORE_VERSION = (\d+)/)
+if (versionMatch) {
+  const nextVersion = parseInt(versionMatch[1]) + 1
+  migSrc = migSrc
+    .replace(/APP_STORE_VERSION = \d+/, `APP_STORE_VERSION = ${nextVersion}`)
+    .replace(/if \(version < \d+\)/, `if (version < ${nextVersion})`)
+  writeFileSync(migrationsTsPath, migSrc)
+  ok(`APP_STORE_VERSION → ${nextVersion}`)
 } else {
-  // Count existing nodes to determine next node number and y position
-  const existingNodes = [...src.matchAll(/id:\s*'node-(\d+)'/g)]
-  const nextNodeNum = existingNodes.length + 1
-  // Determine last y value to space new node below
-  const yMatches = [...src.matchAll(/y:\s*(-?\d+)/g)]
-  const lastY = yMatches.length ? parseInt(yMatches.at(-1)[1]) : 0
-  const newY = lastY + 96
-  // Alternating x pattern: odd nodes lean right (+18), even lean left (-28)
-  const newX = nextNodeNum % 2 === 0 ? -28 : 18
-
-  const nodeBlock = `  {
-    id: 'node-${nextNodeNum}',
-    unitId: '${unitId}',
-    lessonId: '${lessonId}',
-    x: ${newX},
-    y: ${newY},
-    type: 'lesson',
-    unlocked: false,
-    completed: false,
-  },`
-
-  // Insert before the closing ] of pathNodesSeed array
-  src = src.replace(/(export const pathNodesSeed[^=]*=\s*\[)([\s\S]*?)(\n\])/,
-    (_, open, body, close) => `${open}${body}\n${nodeBlock}${close}`)
-  ok(`Added node-${nextNodeNum} to pathNodesSeed (y=${newY})`)
-  addedPathNode = true
+  warn('Could not parse APP_STORE_VERSION — bump it manually in src/store/migrations.ts')
 }
 
-writeFileSync(courseTsPath, src)
-
-// ─── 6. Bump APP_STORE_VERSION so browsers re-run the path migration ───────────
-
-if (addedPathNode) {
-  step('6. Bumping APP_STORE_VERSION…')
-  const migrationsTsPath = resolve(projectRoot, 'src/store/migrations.ts')
-  let migSrc = readFileSync(migrationsTsPath, 'utf8')
-  const versionMatch = migSrc.match(/APP_STORE_VERSION = (\d+)/)
-  if (versionMatch) {
-    const nextVersion = parseInt(versionMatch[1]) + 1
-    migSrc = migSrc
-      .replace(/APP_STORE_VERSION = \d+/, `APP_STORE_VERSION = ${nextVersion}`)
-      .replace(/if \(version < \d+\)/, `if (version < ${nextVersion})`)
-    writeFileSync(migrationsTsPath, migSrc)
-    ok(`APP_STORE_VERSION → ${nextVersion}`)
-  } else {
-    warn('Could not parse APP_STORE_VERSION — bump it manually in src/store/migrations.ts')
-  }
-}
-
-// ─── 7. Clean up temp dir ─────────────────────────────────────────────────────
+// ─── 8. Clean up temp dir ─────────────────────────────────────────────────────
 
 rmSync(tmpDir, { recursive: true, force: true })
 
-console.log(`\n${GREEN}${BOLD}Import complete!${RESET} Run ${CYAN}npm run build${RESET} or ${CYAN}make build${RESET} to verify.\n`)
+console.log(`\n${GREEN}${BOLD}Import complete!${RESET} Run ${CYAN}make build${RESET} to verify.\n`)

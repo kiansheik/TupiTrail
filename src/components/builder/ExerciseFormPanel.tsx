@@ -801,9 +801,10 @@ type Props = {
   exercise: BuilderExercise
   onChange: (ex: BuilderExercise) => void
   vocab?: string[]
+  grammarNotes?: Array<{ label: string; text: string }>
 }
 
-export const ExerciseFormPanel = ({ exercise: ex, onChange, vocab }: Props) => {
+export const ExerciseFormPanel = ({ exercise: ex, onChange, vocab, grammarNotes }: Props) => {
   const updateBase = (partial: Partial<BuilderExercise>) => onChange({ ...ex, ...partial } as BuilderExercise)
 
   const updateCharacter = (id: CharacterId | undefined, mood: CharacterMood) => {
@@ -873,6 +874,7 @@ export const ExerciseFormPanel = ({ exercise: ex, onChange, vocab }: Props) => {
       <GrammarNotesEditor
         explanation={ex.explanation}
         onChange={(e) => onChange({ ...ex, explanation: e } as BuilderExercise)}
+        knownNotes={grammarNotes}
       />
     </div>
   )

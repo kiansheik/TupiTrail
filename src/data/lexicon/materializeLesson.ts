@@ -13,8 +13,10 @@ import { collectLocalizedEntries, resolveLocalizedText } from '@/data/lexicon/he
 import type { LexiconInventoryEntry } from '@/data/lexicon/helpers'
 import type { LocalizedText } from '@/data/lexicon/types'
 
-const resolveText = (text: TextInput): string =>
-  typeof text === 'string' ? text : resolveLocalizedText(text)
+const resolveText = (text: TextInput): string => {
+  const raw = typeof text === 'string' ? text : resolveLocalizedText(text)
+  return raw.toLowerCase()
+}
 
 const resolveAudio = (
   audio: ExerciseTemplate['audio'] | undefined,

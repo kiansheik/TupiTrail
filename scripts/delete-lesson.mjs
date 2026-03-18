@@ -9,14 +9,12 @@
  *   make delete-lesson LESSON=unit1-my-lesson
  *
  * What it removes:
- *   1. src/data/course/en/{unitId}/{lessonId}.ts
- *   2. public/audio/{lessonId}/  (if exists)
- *   3. public/images/{lessonId}/ (if exists)
- *   4. course.ts patches:
- *      - import line
- *      - materializeLesson call
- *      - entry in lessons array
- *      - node in pathNodesSeed
+ *   1. Entry from manifest.json (+ empty unit cleanup)
+ *   2. src/data/course/en/{unitId}/{lessonId}.ts
+ *   3. public/audio/{lessonId}/  (if exists)
+ *   4. public/images/{lessonId}/ (if exists)
+ *   5. Regenerates course.ts
+ *   6. Bumps APP_STORE_VERSION
  */
 
 import {
@@ -28,6 +26,7 @@ import {
 } from 'fs'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
+import { generateCourse } from './generate-course.mjs'
 
 // ─── Colours ──────────────────────────────────────────────────────────────────
 
@@ -55,61 +54,62 @@ if (!lessonId) {
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-// ─── 1. Find the lesson file ──────────────────────────────────────────────────
+// ─── 1. Update manifest.json ─────────────────────────────────────────────────
 
-step('1. Locating lesson file…')
+step('1. Updating manifest.json…')
 
-const unitDirsRoot = resolve(projectRoot, 'src/data/course/en')
-let lessonFilePath = null
-let unitId = null
+const manifestPath = resolve(projectRoot, 'src/data/course/en/manifest.json')
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 
-const unitDirs = readdirSync(unitDirsRoot, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
-  .map((d) => d.name)
-
-for (const dir of unitDirs) {
-  const candidate = resolve(unitDirsRoot, dir, `${lessonId}.ts`)
-  if (existsSync(candidate)) {
-    lessonFilePath = candidate
-    unitId = dir
-    break
+// Match by exact path (e.g. "unit1/unit1-tembi-u") or by lesson name (e.g. "unit1-tembi-u")
+let lessonIdx = manifest.lessons.indexOf(lessonId)
+if (lessonIdx === -1) {
+  const matches = manifest.lessons.filter((p) => p.endsWith(`/${lessonId}`))
+  if (matches.length === 1) {
+    lessonIdx = manifest.lessons.indexOf(matches[0])
+  } else if (matches.length > 1) {
+    err(`Ambiguous lesson '${lessonId}' — found in multiple units:`)
+    for (const m of matches) info(`  ${m}`)
+    info(`Use the full path: make delete-lesson LESSON=${matches[0]}`)
+    process.exit(1)
   }
 }
-
-if (!lessonFilePath) {
-  err(`Lesson file not found for ID '${lessonId}' in any unit directory.`)
-  err(`Searched: ${unitDirs.map((d) => `src/data/course/en/${d}/${lessonId}.ts`).join(', ')}`)
+if (lessonIdx === -1) {
+  err(`Lesson '${lessonId}' not found in manifest.json`)
+  info(`Available lessons: ${manifest.lessons.join(', ')}`)
   process.exit(1)
 }
 
-info(`Found: src/data/course/en/${unitId}/${lessonId}.ts`)
+const lessonPath = manifest.lessons[lessonIdx]
+const unitId = lessonPath.split('/')[0]
 
-// ─── 2. Read the lesson file to get the export variable name ─────────────────
+manifest.lessons.splice(lessonIdx, 1)
+ok(`Removed '${lessonPath}' from manifest.lessons`)
 
-step('2. Reading lesson metadata…')
-
-const tsContent = readFileSync(lessonFilePath, 'utf8')
-const varNameMatch = tsContent.match(/export const (\w+)/)
-if (!varNameMatch) {
-  err('Could not find export const in lesson file.')
-  process.exit(1)
+// Remove unit if no more lessons reference it
+const unitStillUsed = manifest.lessons.some((p) => p.startsWith(unitId + '/'))
+if (!unitStillUsed) {
+  manifest.units = manifest.units.filter((u) => u.id !== unitId)
+  ok(`Removed empty unit '${unitId}' from manifest`)
 }
-const templateVar = varNameMatch[1]
-const lessonVar = templateVar.replace(/_template$/, '')
 
-info(`Template var : ${templateVar}`)
-info(`Lesson var   : ${lessonVar}`)
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
 
-// ─── 3. Delete the lesson .ts file ───────────────────────────────────────────
+// ─── 2. Delete lesson file ───────────────────────────────────────────────────
 
-step('3. Deleting lesson file…')
+step('2. Deleting lesson file…')
 
-rmSync(lessonFilePath)
-ok(`Deleted src/data/course/en/${unitId}/${lessonId}.ts`)
+const lessonFile = resolve(projectRoot, 'src/data/course/en', lessonPath + '.ts')
+if (existsSync(lessonFile)) {
+  rmSync(lessonFile)
+  ok(`Deleted src/data/course/en/${lessonPath}.ts`)
+} else {
+  warn(`File not found: src/data/course/en/${lessonPath}.ts`)
+}
 
-// ─── 4. Delete audio folder ───────────────────────────────────────────────────
+// ─── 3. Delete audio & image folders ─────────────────────────────────────────
 
-step('4. Deleting audio files…')
+step('3. Deleting audio & image files…')
 
 const audioDir = resolve(projectRoot, 'public/audio', lessonId)
 if (existsSync(audioDir)) {
@@ -117,12 +117,8 @@ if (existsSync(audioDir)) {
   rmSync(audioDir, { recursive: true, force: true })
   ok(`Deleted public/audio/${lessonId}/ (${count} file${count !== 1 ? 's' : ''})`)
 } else {
-  info('No public/audio/{lessonId}/ folder — skipping.')
+  info('No audio folder — skipping.')
 }
-
-// ─── 5. Delete images folder ──────────────────────────────────────────────────
-
-step('5. Deleting image files…')
 
 const imagesDir = resolve(projectRoot, 'public/images', lessonId)
 if (existsSync(imagesDir)) {
@@ -130,78 +126,33 @@ if (existsSync(imagesDir)) {
   rmSync(imagesDir, { recursive: true, force: true })
   ok(`Deleted public/images/${lessonId}/ (${count} file${count !== 1 ? 's' : ''})`)
 } else {
-  info('No public/images/{lessonId}/ folder — skipping.')
+  info('No images folder — skipping.')
 }
 
-// ─── 6. Patch course.ts ───────────────────────────────────────────────────────
+// ─── 4. Regenerate course.ts ─────────────────────────────────────────────────
 
-step('6. Patching src/data/course/en/course.ts…')
+step('4. Generating course.ts…')
 
-const courseTsPath = resolve(projectRoot, 'src/data/course/en/course.ts')
-let src = readFileSync(courseTsPath, 'utf8')
+const result = generateCourse()
+ok(`Generated — ${result.lessons.length} lesson(s), ${result.unitOrder.length} unit(s)`)
 
-// 6a. Remove import line
-const importPattern = new RegExp(`^import \\{ ${templateVar} \\} from '[^']+'\n`, 'm')
-if (importPattern.test(src)) {
-  src = src.replace(importPattern, '')
-  ok(`Removed import { ${templateVar} }`)
+// ─── 5. Bump APP_STORE_VERSION ───────────────────────────────────────────────
+
+step('5. Bumping APP_STORE_VERSION…')
+
+const migrationsTsPath = resolve(projectRoot, 'src/store/migrations.ts')
+let migSrc = readFileSync(migrationsTsPath, 'utf8')
+const versionMatch = migSrc.match(/APP_STORE_VERSION = (\d+)/)
+if (versionMatch) {
+  const nextVersion = parseInt(versionMatch[1]) + 1
+  migSrc = migSrc
+    .replace(/APP_STORE_VERSION = \d+/, `APP_STORE_VERSION = ${nextVersion}`)
+    .replace(/if \(version < \d+\)/, `if (version < ${nextVersion})`)
+  writeFileSync(migrationsTsPath, migSrc)
+  ok(`APP_STORE_VERSION → ${nextVersion}`)
 } else {
-  warn(`Import line for '${templateVar}' not found — skipping.`)
+  warn('Could not parse APP_STORE_VERSION — bump it manually in src/store/migrations.ts')
 }
-
-// 6b. Remove materializeLesson call
-const matPattern = new RegExp(`^const ${lessonVar} = materializeLesson\\(${templateVar}\\)\n`, 'm')
-if (matPattern.test(src)) {
-  src = src.replace(matPattern, '')
-  ok(`Removed const ${lessonVar} = materializeLesson(…)`)
-} else {
-  warn(`materializeLesson call for '${lessonVar}' not found — skipping.`)
-}
-
-// 6c. Remove from lessons array — handles ", lessonVar" or "lessonVar," or "lessonVar" alone
-const inLessons = new RegExp(`,?\\s*\\b${lessonVar}\\b\\s*,?`)
-// We need to be careful not to remove both commas. Strategy: find the unit block, patch within it.
-const unitMarker = `id: '${unitId}'`
-const markerIdx = src.indexOf(unitMarker)
-if (markerIdx === -1) {
-  warn(`Unit '${unitId}' not found in course.ts — could not remove from lessons array.`)
-} else {
-  let objStart = markerIdx
-  while (objStart > 0 && src[objStart] !== '{') objStart--
-  let depth = 0, objEnd = objStart
-  while (objEnd < src.length) {
-    if (src[objEnd] === '{') depth++
-    else if (src[objEnd] === '}') { depth--; if (depth === 0) break }
-    objEnd++
-  }
-  const unitBlock = src.slice(objStart, objEnd + 1)
-
-  if (!unitBlock.includes(lessonVar)) {
-    warn(`'${lessonVar}' not found in unit '${unitId}' lessons array — skipping.`)
-  } else {
-    // Remove "lessonVar," or ", lessonVar" or just "lessonVar" if it's the only one
-    let patched = unitBlock
-      .replace(new RegExp(`\\b${lessonVar}\\b,\\s*`), '')   // "lessonVar, "
-      .replace(new RegExp(`,\\s*\\b${lessonVar}\\b`), '')   // ", lessonVar"
-      .replace(new RegExp(`\\b${lessonVar}\\b`), '')         // lone entry
-    src = src.slice(0, objStart) + patched + src.slice(objEnd + 1)
-    ok(`Removed '${lessonVar}' from unit '${unitId}' lessons array`)
-  }
-}
-
-// 6d. Remove pathNodesSeed node block
-const nodeSeedPattern = new RegExp(
-  `\\s*\\{[^}]*lessonId:\\s*'${lessonId}'[^}]*\\},?`,
-  's'
-)
-if (nodeSeedPattern.test(src)) {
-  src = src.replace(nodeSeedPattern, '')
-  ok(`Removed pathNodesSeed node for '${lessonId}'`)
-} else {
-  warn(`No pathNodesSeed node found for '${lessonId}' — skipping.`)
-}
-
-writeFileSync(courseTsPath, src)
 
 // ─── Done ─────────────────────────────────────────────────────────────────────
 
