@@ -149,8 +149,14 @@ const ExerciseRow = ({
 }) => {
   return (
     <div className="rounded-2xl border-2 border-ink/10 bg-white">
-      {/* Header row */}
-      <div className="flex items-center gap-2 px-3 py-2.5">
+      {/* Header row — entire row toggles except action buttons */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggle}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle() } }}
+        className="flex cursor-pointer items-center gap-2 px-3 py-2.5"
+      >
         {/* Order badge */}
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-black text-primary">
           {index + 1}
@@ -164,21 +170,17 @@ const ExerciseRow = ({
         </span>
 
         {/* Summary text */}
-        <button
-          type="button"
-          onClick={onToggle}
-          className="min-w-0 flex-1 text-left"
-        >
+        <div className="min-w-0 flex-1 text-left">
           <p className="truncate text-sm font-bold text-ink">
             {ex.instruction || <span className="text-ink/35">sem instrução</span>}
           </p>
           <p className="truncate text-xs font-semibold text-ink/40">{ex.id}</p>
-        </button>
+        </div>
 
         {/* Move up/down */}
         <button
           type="button"
-          onClick={() => onMove(-1)}
+          onClick={(e) => { e.stopPropagation(); onMove(-1) }}
           disabled={index === 0}
           className="shrink-0 rounded-lg px-1.5 py-1 text-xs font-black text-ink/40 transition hover:bg-shell hover:text-ink disabled:opacity-20"
         >
@@ -186,7 +188,7 @@ const ExerciseRow = ({
         </button>
         <button
           type="button"
-          onClick={() => onMove(1)}
+          onClick={(e) => { e.stopPropagation(); onMove(1) }}
           disabled={index === total - 1}
           className="shrink-0 rounded-lg px-1.5 py-1 text-xs font-black text-ink/40 transition hover:bg-shell hover:text-ink disabled:opacity-20"
         >
@@ -196,20 +198,16 @@ const ExerciseRow = ({
         {/* Delete */}
         <button
           type="button"
-          onClick={onDelete}
+          onClick={(e) => { e.stopPropagation(); onDelete() }}
           className="shrink-0 rounded-lg px-2 py-1 text-xs font-black text-red-400 transition hover:bg-red-50 hover:text-red-600"
         >
           ×
         </button>
 
-        {/* Expand toggle */}
-        <button
-          type="button"
-          onClick={onToggle}
-          className="shrink-0 rounded-lg px-1.5 py-1 text-xs font-black text-ink/40 transition hover:bg-shell"
-        >
+        {/* Expand toggle indicator */}
+        <span className="shrink-0 px-1.5 py-1 text-xs font-black text-ink/40">
           {expanded ? '▲' : '▼'}
-        </button>
+        </span>
       </div>
 
       {/* Expanded form */}

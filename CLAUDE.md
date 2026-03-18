@@ -1,6 +1,12 @@
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Legal & Branding Notice
+
+This project is not affiliated with, endorsed by, or connected to Duolingo, Inc. All references to language learning flows are generic and not intended to imply association. For more information and the official project, visit: [https://tama.academiatupi.com](https://tama.academiatupi.com)
+
 
 ## Commands
 
