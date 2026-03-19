@@ -17,8 +17,8 @@ const empty = (): BuilderExplanation => ({})
 const LONG_PRESS_MS = 200
 
 export const GrammarNotesEditor = ({ explanation, onChange, knownNotes }: Props) => {
-  const ex = explanation ?? empty()
-  const notes = ex.grammarNotes ?? []
+  const ex = useMemo(() => explanation ?? empty(), [explanation])
+  const notes = useMemo(() => ex.grammarNotes ?? [], [ex.grammarNotes])
 
   // ─── Drag state ──────────────────────────────────────────────────────────
   const [dragIndex, setDragIndex] = useState<number | null>(null)
@@ -83,12 +83,6 @@ export const GrammarNotesEditor = ({ explanation, onChange, knownNotes }: Props)
       .filter((n) => n.label.includes(draft) && !existingLabels.has(n.label))
       .slice(0, 6)
   }, [focusedLabelIdx, knownNotes, notes])
-
-  // Reset highlighted suggestion when suggestions change
-  useMemo(() => {
-    setHighlightedSuggestion(0)
-    // Optionally: return () => setHighlightedSuggestion(0)
-  }, [suggestions])
 
   const handleLabelKeyDown = (e: React.KeyboardEvent, i: number) => {
     if (!suggestions.length) return
@@ -252,8 +246,14 @@ export const GrammarNotesEditor = ({ explanation, onChange, knownNotes }: Props)
                     className="w-full rounded-lg border border-ink/20 bg-shell px-2 py-1.5 text-xs font-black text-ink placeholder:text-ink/35 focus:border-primary focus:outline-none"
                     placeholder="morfema"
                     value={note.label}
-                    onChange={(e) => updateNote(i, 'label', e.target.value)}
-                    onFocus={() => setFocusedLabelIdx(i)}
+                    onChange={(e) => {
+                      updateNote(i, 'label', e.target.value)
+                      setHighlightedSuggestion(0)
+                    }}
+                    onFocus={() => {
+                      setFocusedLabelIdx(i)
+                      setHighlightedSuggestion(0)
+                    }}
                     onBlur={() => setTimeout(() => setFocusedLabelIdx(null), 150)}
                     onKeyDown={(e) => handleLabelKeyDown(e, i)}
                   />
