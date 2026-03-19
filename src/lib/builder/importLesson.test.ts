@@ -144,7 +144,7 @@ function makeZipFile(lesson: BuilderLesson, audioData?: Uint8Array, imageData?: 
     entries.push({ name: 'images/water.jpg', data: imageData })
   }
   const zipBytes = buildZipBytes(entries)
-  return new File([zipBytes], 'test.zip', { type: 'application/zip' })
+  return new File([zipBytes.buffer as ArrayBuffer], 'test.zip', { type: 'application/zip' })
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ describe('importLessonZip', () => {
     const { importLessonZip } = await import('./importLesson')
     const enc = new TextEncoder()
     const zipBytes = buildZipBytes([{ name: 'other.txt', data: enc.encode('hi') }])
-    const file = new File([zipBytes], 'bad.zip', { type: 'application/zip' })
+    const file = new File([zipBytes.buffer as ArrayBuffer], 'bad.zip', { type: 'application/zip' })
 
     await expect(importLessonZip(file)).rejects.toThrow('lesson.json')
   })

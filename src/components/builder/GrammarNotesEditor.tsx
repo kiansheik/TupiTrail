@@ -85,7 +85,10 @@ export const GrammarNotesEditor = ({ explanation, onChange, knownNotes }: Props)
   }, [focusedLabelIdx, knownNotes, notes])
 
   // Reset highlighted suggestion when suggestions change
-  useEffect(() => setHighlightedSuggestion(0), [suggestions])
+  useMemo(() => {
+    setHighlightedSuggestion(0)
+    // Optionally: return () => setHighlightedSuggestion(0)
+  }, [suggestions])
 
   const handleLabelKeyDown = (e: React.KeyboardEvent, i: number) => {
     if (!suggestions.length) return
@@ -153,22 +156,19 @@ export const GrammarNotesEditor = ({ explanation, onChange, knownNotes }: Props)
     setOverIndex(index)
   }
 
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (dragItemRef.current === null || !containerRef.current) return
-      const touch = e.touches[0]
-      const noteEls = containerRef.current.querySelectorAll('[data-note-index]')
-      for (const el of noteEls) {
-        const rect = el.getBoundingClientRect()
-        if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
-          const idx = Number(el.getAttribute('data-note-index'))
-          setOverIndex(idx)
-          break
-        }
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragItemRef.current === null || !containerRef.current) return
+    const touch = e.touches[0]
+    const noteEls = containerRef.current.querySelectorAll('[data-note-index]')
+    for (const el of noteEls) {
+      const rect = el.getBoundingClientRect()
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        const idx = Number(el.getAttribute('data-note-index'))
+        setOverIndex(idx)
+        break
       }
-    },
-    [],
-  )
+    }
+  }
 
   const isDragging = dragIndex !== null
 

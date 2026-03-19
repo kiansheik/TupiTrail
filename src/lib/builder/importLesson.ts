@@ -1,4 +1,4 @@
-import type { BuilderLesson, BuilderSelectImage, BuilderDialogueChoice } from './builderTypes'
+import type { BuilderLesson, BuilderSelectImage } from './builderTypes'
 import { readZip } from './zipReader'
 import { saveAudioBlob } from './audioStorage'
 import { saveImageDataUrl } from './imageStorage'
@@ -39,7 +39,7 @@ export async function importLessonZip(file: File): Promise<BuilderLesson> {
     const fileName = entry.name.slice('audio/'.length)
     const blobKey = fileName.replace(/\.(webm|ogg)$/, '')
     const mimeType = fileName.endsWith('.ogg') ? 'audio/ogg' : 'audio/webm'
-    const blob = new Blob([entry.data], { type: mimeType })
+    const blob = new Blob([entry.data.buffer as ArrayBuffer], { type: mimeType })
     await saveAudioBlob(blobKey, blob)
   }
 
