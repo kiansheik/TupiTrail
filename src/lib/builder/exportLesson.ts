@@ -12,6 +12,7 @@ import type {
 } from './builderTypes'
 import { getAudioBlob } from './audioStorage'
 import { getImageDataUrl } from './imageStorage'
+import { normalizeSelectImageExercise } from './normalizeSelectImage'
 import { buildZip, type ZipEntry } from './zipWriter'
 
 const enc = new TextEncoder()
@@ -232,18 +233,29 @@ async function collectAudioEntries(lesson: BuilderLesson): Promise<ZipEntry[]> {
   return entries
 }
 
+function normalizeLessonForExport(lesson: BuilderLesson): BuilderLesson {
+  return {
+    ...lesson,
+    exercises: lesson.exercises.map((ex) => {
+      if (ex.type !== 'select_image') return ex
+      return normalizeSelectImageExercise(ex as BuilderSelectImage)
+    }),
+  }
+}
+
 // ─── Public export function ───────────────────────────────────────────────────
 
 export async function exportLessonZip(lesson: BuilderLesson): Promise<void> {
-  const tsCode = generateTs(lesson)
-  const readme = generateReadme(lesson)
+  const normalized = normalizeLessonForExport(lesson)
+  const tsCode = generateTs(normalized)
+  const readme = generateReadme(normalized)
 
-  const audioEntries = await collectAudioEntries(lesson)
-  const imageEntries = await collectImageEntries(lesson)
+  const audioEntries = await collectAudioEntries(normalized)
+  const imageEntries = await collectImageEntries(normalized)
 
   const zipEntries: ZipEntry[] = [
-    { name: `${lesson.id}.ts`, data: enc.encode(tsCode) },
-    { name: 'lesson.json', data: enc.encode(JSON.stringify(lesson, null, 2)) },
+    { name: `${normalized.id}.ts`, data: enc.encode(tsCode) },
+    { name: 'lesson.json', data: enc.encode(JSON.stringify(normalized, null, 2)) },
     { name: 'README.md', data: enc.encode(readme) },
     ...audioEntries,
     ...imageEntries,
@@ -253,7 +265,7 @@ export async function exportLessonZip(lesson: BuilderLesson): Promise<void> {
   const url = URL.createObjectURL(zipBlob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${lesson.id}.zip`
+  a.download = `${normalized.id}.zip`
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 5000)
 }

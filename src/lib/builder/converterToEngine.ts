@@ -1,5 +1,7 @@
 import type { AudioSpec, Exercise, RichTextSegment } from '@/core/lesson-engine/types'
 import { createAudioUrl } from './audioStorage'
+import { getImageDataUrl } from './imageStorage'
+import { normalizeSelectImageExercise } from './normalizeSelectImage'
 import type {
   BuilderAudio,
   BuilderDialogueChoice,
@@ -33,7 +35,11 @@ function segs(s: BuilderSegment[] | undefined): RichTextSegment[] | undefined {
 
 // ─── Exercise ─────────────────────────────────────────────────────────────────
 
-function convertExercise(ex: BuilderExercise, urls: Map<string, string>): Exercise {
+function convertExercise(
+  ex: BuilderExercise,
+  urls: Map<string, string>,
+  imageUrls: Map<string, string>,
+): Exercise {
   const base = {
     id: ex.id,
     instruction: ex.instruction,
@@ -48,7 +54,7 @@ function convertExercise(ex: BuilderExercise, urls: Map<string, string>): Exerci
   } as const
 
   if (ex.type === 'select_image') {
-    const e = ex as BuilderSelectImage
+    const e = normalizeSelectImageExercise(ex as BuilderSelectImage)
     return {
       ...base,
       type: 'select_image',
@@ -57,6 +63,7 @@ function convertExercise(ex: BuilderExercise, urls: Map<string, string>): Exerci
         id: o.id,
         label: o.label,
         imageEmoji: o.imageEmoji,
+        imageSrc: o.imageKey ? imageUrls.get(o.imageKey) ?? undefined : undefined,
       })),
       correctOptionId: e.correctOptionId,
     }
@@ -119,6 +126,17 @@ function collectBlobKeys(exercises: BuilderExercise[]): string[] {
   return keys
 }
 
+function collectImageKeys(exercises: BuilderExercise[]): string[] {
+  const keys: string[] = []
+  for (const ex of exercises) {
+    if (ex.type !== 'select_image') continue
+    for (const opt of (ex as BuilderSelectImage).options) {
+      if (opt.imageKey) keys.push(opt.imageKey)
+    }
+  }
+  return keys
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /** Load all recorded audio blobs into object URLs, then convert exercises to engine format. */
@@ -126,17 +144,27 @@ export async function builderToEngineExercises(
   exercises: BuilderExercise[],
 ): Promise<{ engineExercises: Exercise[]; revokeAll: () => void }> {
   const blobKeys = collectBlobKeys(exercises)
+  const imageKeys = collectImageKeys(exercises)
 
-  const entries = await Promise.all(
-    blobKeys.map(async (key): Promise<[string, string] | null> => {
-      const url = await createAudioUrl(key)
-      return url ? [key, url] : null
-    }),
-  )
+  const [audioEntries, imageEntries] = await Promise.all([
+    Promise.all(
+      blobKeys.map(async (key): Promise<[string, string] | null> => {
+        const url = await createAudioUrl(key)
+        return url ? [key, url] : null
+      }),
+    ),
+    Promise.all(
+      imageKeys.map(async (key): Promise<[string, string] | null> => {
+        const url = await getImageDataUrl(key)
+        return url ? [key, url] : null
+      }),
+    ),
+  ])
 
-  const urls = new Map<string, string>(entries.filter((e): e is [string, string] => e !== null))
+  const urls = new Map<string, string>(audioEntries.filter((e): e is [string, string] => e !== null))
+  const imageUrls = new Map<string, string>(imageEntries.filter((e): e is [string, string] => e !== null))
 
-  const engineExercises = exercises.map((ex) => convertExercise(ex, urls))
+  const engineExercises = exercises.map((ex) => convertExercise(ex, urls, imageUrls))
 
   const revokeAll = () => urls.forEach((url) => URL.revokeObjectURL(url))
 

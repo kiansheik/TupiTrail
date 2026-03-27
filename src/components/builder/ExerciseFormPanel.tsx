@@ -441,7 +441,7 @@ const OptionMediaCell = ({
             placeholder="🍵"
             value={imageEmoji}
             onChange={(e) => onEmojiChange(e.target.value)}
-            maxLength={2}
+            maxLength={8}
           />
         )}
       </div>
@@ -470,8 +470,19 @@ const SelectImageForm = ({
     const options = ex.options.map((o, idx) => (idx === i ? { ...o, ...patch } : o))
     onChange({ ...ex, options })
   }
-  const addOption = () =>
-    onChange({ ...ex, options: [...ex.options, { id: '', label: '', imageEmoji: '' }] })
+  const makeUniqueOptionId = (base: string) => {
+    const used = new Set(ex.options.map((o) => o.id).filter((id) => id))
+    let id = base
+    let i = 2
+    while (!id || used.has(id)) {
+      id = `${base}-${i++}`
+    }
+    return id
+  }
+  const addOption = () => {
+    const id = makeUniqueOptionId(`option-${ex.options.length + 1}`)
+    onChange({ ...ex, options: [...ex.options, { id, label: '', imageEmoji: '' }] })
+  }
   const removeOption = (i: number) =>
     onChange({ ...ex, options: ex.options.filter((_, idx) => idx !== i) })
 
