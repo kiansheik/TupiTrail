@@ -1,6 +1,6 @@
 import { pathNodesSeed } from '@/data/course'
 
-export const APP_STORE_VERSION = 12
+export const APP_STORE_VERSION = 13
 
 export function rebuildPathNodes(existing: Array<Record<string, unknown>>) {
   const existingByLessonId = new Map(existing.map((n) => [n.lessonId as string, n]))
@@ -27,7 +27,7 @@ export function rebuildPathNodes(existing: Array<Record<string, unknown>>) {
 export const migrateAppStore = (persistedState: unknown, version: number): unknown => {
   const state = persistedState as Record<string, unknown>
 
-  if (version < 12) {
+  if (version < 13) {
     const progress = state.progress as Record<string, unknown> | undefined
     if (progress) {
       const existing = Array.isArray(progress.pathNodes)

@@ -2,9 +2,11 @@
 // To modify, update manifest.json and run: make generate-course
 import type { CourseData, LessonMapNode } from '@/core/lesson-engine/types'
 import { lesson1Template } from '@/data/course/en/unit1/lesson1'
+import { unit1_tembi_u_template } from '@/data/course/en/unit1/unit1-tembi-u'
 import { extractLessonLexiconInventory, materializeLesson } from '@/data/lexicon'
 
 const lesson1 = materializeLesson(lesson1Template)
+const unit1_tembi_u = materializeLesson(unit1_tembi_u_template)
 export const lessonLexiconInventory = extractLessonLexiconInventory(lesson1Template)
 
 export const courseEn: CourseData = {
@@ -14,7 +16,7 @@ export const courseEn: CourseData = {
     {
       id: 'unit1',
       title: 'Unit 1: Drinks & Polite Words',
-      lessons: [lesson1],
+      lessons: [lesson1, unit1_tembi_u],
     },
   ],
 }
@@ -28,6 +30,16 @@ export const pathNodesSeed: LessonMapNode[] = [
     y: 0,
     type: 'lesson',
     unlocked: true,
+    completed: false,
+  },
+  {
+    id: 'node-2',
+    unitId: 'unit1',
+    lessonId: 'unit1-tembi-u',
+    x: -28,
+    y: 96,
+    type: 'lesson',
+    unlocked: false,
     completed: false,
   },
 ]
