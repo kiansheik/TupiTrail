@@ -11,12 +11,22 @@ type CharacterAvatarProps = {
 
 const Mouth = ({ mood }: { mood?: CharacterAvatarProps['mood'] }) => {
   if (mood === 'thinking') {
-    return <line x1="45" y1="68" x2="55" y2="68" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
+    return <circle cx="50" cy="69" r="3" fill="none" stroke="#1b2b26" strokeWidth="3" />
   }
   if (mood === 'neutral') {
     return <line x1="43" y1="70" x2="57" y2="70" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
   }
-  return <path d="M42 67c4 8 12 8 16 0" fill="none" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
+  if (mood === 'encouraging') {
+    return (
+      <g>
+        <path d="M38 64 Q50 80 62 64" fill="none" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
+        <line x1="38" y1="64" x2="34" y2="62" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
+        <line x1="62" y1="64" x2="66" y2="62" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
+      </g>
+    )
+  }
+  // happy
+  return <path d="M42 66 Q50 76 58 66" fill="none" stroke="#1b2b26" strokeWidth="3" strokeLinecap="round" />
 }
 
 export const CharacterAvatar = ({ id, mood = 'neutral', className, blink = false }: CharacterAvatarProps) => {
