@@ -5,8 +5,32 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ScreenScaffold } from '@/components/layout/ScreenScaffold'
 import { Button } from '@/components/ui/Button'
 import { TamaChatAvatar } from '@/components/ui/TamaChatAvatar'
-import { lessonById } from '@/data/course'
+import { courseEn, lessonById } from '@/data/course'
 import { useLessonSessionStore } from '@/store/useLessonSessionStore'
+
+const ORDINAL_PT: Record<number, string> = {
+  1: 'Primeira',
+  2: 'Segunda',
+  3: 'Terceira',
+  4: 'Quarta',
+  5: 'Quinta',
+  6: 'Sexta',
+  7: 'Sétima',
+  8: 'Oitava',
+  9: 'Nona',
+  10: 'Décima',
+}
+
+function lessonOrdinal(lessonId: string): number | null {
+  let idx = 0
+  for (const unit of courseEn.units) {
+    for (const lesson of unit.lessons) {
+      idx += 1
+      if (lesson.id === lessonId) return idx
+    }
+  }
+  return null
+}
 
 export const LessonIntroScreen = () => {
   const navigate = useNavigate()
@@ -25,6 +49,10 @@ export const LessonIntroScreen = () => {
     startLesson(lesson)
     navigate(`/lesson/${lesson.id}/run`)
   }
+
+  const ordinal = lessonOrdinal(lessonId)
+  const ordinalLabel = ordinal ? (ORDINAL_PT[ordinal] ?? `${ordinal}ª`) : null
+  const headline = ordinalLabel ? `${ordinalLabel} lição pronta` : 'Lição pronta'
 
   return (
     <ScreenScaffold
@@ -50,7 +78,7 @@ export const LessonIntroScreen = () => {
             <div className="relative rounded-[1.25rem] border-2 border-ink/20 bg-white/95 px-4 py-3 shadow-[0_8px_0_rgba(27,43,38,0.08)]">
               <div className="absolute -left-2 top-5 h-3.5 w-3.5 rotate-45 border-b-2 border-l-2 border-ink/20 bg-white/95" />
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink/55">Tama</p>
-              <p className="mt-1 font-display text-2xl leading-tight text-ink">Primeira lição pronta</p>
+              <p className="mt-1 font-display text-2xl leading-tight text-ink">{headline}</p>
               <p className="mt-1 text-sm font-extrabold text-ink/70">
                 Sequência com revisão de erros, combo e feedback explicável.
               </p>
