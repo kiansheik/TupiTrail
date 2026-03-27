@@ -39,7 +39,7 @@ describe('randomizeExerciseResponses', () => {
         type: 'multiple_choice_translation',
         instruction: 'choose',
         prompt: 'tea',
-        choices: ['cha', 'agua', 'acucar'],
+        choices: ['cha', 'agua', 'açucar'],
         correctChoice: 'cha',
       },
       {

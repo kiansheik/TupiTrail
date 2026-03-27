@@ -249,7 +249,7 @@ export const lesson1Template: LessonTemplateData = {
           instruction: 'Escolha a traducao correta',
           character: { id: 'woman', mood: 'happy' },
           prompt: en('tea'),
-          choices: [pt('chá'), pt('agua'), pt('acucar')],
+          choices: [pt('chá'), pt('agua'), pt('açucar')],
           correctChoice: pt('chá'),
           meaning: 'tea',
           audio: repoAudio('unit1/shared/normalized/tea.mp3', { id: 'vocab-tea' }),
