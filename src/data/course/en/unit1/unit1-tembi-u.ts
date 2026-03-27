@@ -147,25 +147,6 @@ export const unit1_tembi_u_template: LessonTemplateData = {
       correctSequence: ['eu', 'uso', 'a colher'],
     },
     {
-      id: 'ex7',
-      type: 'token_translate',
-      instruction: 'Traduza esta frase',
-      newWordBadge: true,
-      character: { id: 'nonbinary', mood: 'neutral' },
-      audio: repoAudio('audio/unit1-tembi-u/_word_akaru_pese.webm', { id: '_word_akaru_pese' }),
-      meaning: 'Eu como com colher',
-      xp: 8,
-      sourceText: [
-        { text: 'Akaru pesẽ' },
-        { text: 'PUPÉ', highlight: 'new-word' }
-      ],
-      promptSegments: [
-        { text: 'PUPÉ', highlight: 'new-word' }
-      ],
-      tokenBank: ['você', 'come', 'como', 'colher', 'com'],
-      correctSequence: ['como', 'com', 'colher'],
-    },
-    {
       id: 'ex8',
       type: 'multiple_choice_translation',
       instruction: 'Responda ao diálogo',
