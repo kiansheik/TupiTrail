@@ -12,21 +12,25 @@ This project is not affiliated with, endorsed by, or connected to Duolingo, Inc.
 
 ```bash
 # Development
-make dev                        # Start dev server (sets VITE_LEXICON_TARGET_LANG=en)
+make dev                        # Start dev server (Tupi-only)
 make build                      # TypeScript check + Vite build
 make test                       # Run all tests (vitest run)
 make lint                       # ESLint
+make local-deploy               # lint → build → test → dev server
 
 # Individual test file
 npx vitest run src/core/lesson-engine/session.test.ts
 
 # Lesson builder workflow
 make import-lesson ZIP=path/to/export.zip   # Import builder ZIP into course data
+make export-lesson LESSON=unit1-tembi-u     # Export lesson to ZIP
 make delete-lesson LESSON=unit1-my-lesson   # Remove lesson + its assets from course data
+make generate-course                        # Regenerate course.ts from manifest.json
 
-# Audio validation
+# Audio & lexicon
 make check-required-audio        # List missing audio files
 make check-required-audio-strict # Fail if any required audio is missing
+make generate-englishtotupi-map  # Auto-generate en→tupi map keys from lesson data
 
 # Deployment
 make deploy-gh-pages             # Full pipeline: lint → build → test → gh-pages
@@ -46,14 +50,16 @@ make deploy-gh-pages             # Full pipeline: lint → build → test → gh
 - `course/en/unitN/lessonN.ts` — Lesson files typed as `LessonTemplateData` (not `LessonData`)
 - `lexicon/materializeLesson.ts` — Converts `LessonTemplateData → LessonData`, resolving `LocalizedText` via `resolveText()`
 - `lexicon/helpers.ts` — `enText()`, `ptBrText()`, `tupiText()` constructors
-- Build-time lang target via `VITE_LEXICON_TARGET_LANG` env var
+- Lexicon target language is fixed to Tupi (no build-time override)
 
 **App** (`src/app/`, `src/screens/`, `src/components/`, `src/store/`) — React + Zustand layer.
 - `store/useAppStore.ts` — Persisted to localStorage: profile, progress, `pathNodes`, lesson resume state
 - `store/useLessonSessionStore.ts` — In-memory active lesson session
-- `store/migrations.ts` — Versioned store migrations (currently v5); `rebuildPathNodes` merges seed with saved state (preserves unlock/completion, drops stale nodes)
+- `store/migrations.ts` — Versioned store migrations (currently v13); `rebuildPathNodes` merges seed with saved state (preserves unlock/completion, drops stale nodes)
 - `onRehydrateStorage` in `useAppStore` always re-syncs `pathNodes` with the seed on hydration — new lessons appear without a version bump
 - `app/router.tsx` — HashRouter (GitHub Pages); all lesson routes use `/lesson/:lessonId/...`
+
+**Imports** use `@/` path alias (mapped to `src/`). PWA with offline support via `vite-plugin-pwa` + Workbox (caches audio files).
 
 ## Key Concepts
 
